@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/windbnb/accomodation-service/client"
 	"github.com/windbnb/accomodation-service/model"
 	"github.com/windbnb/accomodation-service/service"
 	"github.com/windbnb/accomodation-service/util"
@@ -23,16 +24,24 @@ func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := r.MultipartForm.Value["name"][0]
-	address := r.MultipartForm.Value["address"][0]
-	hasWifi, _ := strconv.ParseBool(r.MultipartForm.Value["hasWifi"][0])
-	hasKitchen, _ := strconv.ParseBool(r.MultipartForm.Value["hasKitchen"][0])
-	hasAirConditioning, _ := strconv.ParseBool(r.MultipartForm.Value["hasAirConditioning"][0])
-	hasFreeParking, _ := strconv.ParseBool(r.MultipartForm.Value["hasFreeParking"][0])
-	minimimGuests, _ := strconv.ParseUint(r.MultipartForm.Value["minimumGuests"][0], 10, 32)
-	maximumGuests, _ := strconv.ParseUint(r.MultipartForm.Value["maximumGuests"][0], 10, 32)
+	userId, _ := strconv.ParseUint(r.MultipartForm.Value["userId"][0], 10, 32)
 
-	savedAccomodation := h.Service.SaveAccomodation(model.Accomodation{Name: name, Address: address, HasWifi: hasWifi, HasKitchen: hasKitchen, HasAirConditioning: hasAirConditioning, HasFreeParking: hasFreeParking, MinimimGuests: uint(minimimGuests), MaximumGuests: uint(maximumGuests)})
+	userResponse, err := client.GetUserById(uint(userId))
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadGateway})
+		return
+	}
+
+	if userResponse.Role != "HOST" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	newAccomodation := util.ParseMultipartAccomodation(r)
+	newAccomodation.UserId = uint(userId)
+	savedAccomodation := h.Service.SaveAccomodation(newAccomodation)
 
 	files := r.MultipartForm.File["images"]
 

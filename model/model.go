@@ -15,10 +15,21 @@ type Accomodation struct {
 	MinimimGuests uint
 	MaximumGuests uint
 	Images []AccomodationImage
+	UserId uint
 }
 
 func (accomodation *Accomodation) ToDTO() AccomodationDTO {
-	return AccomodationDTO{Id: accomodation.ID, Name: accomodation.Name, Address: accomodation.Address, HasWifi: accomodation.HasWifi, HasKitchen: accomodation.HasKitchen, HasAirConditioning: accomodation.HasAirConditioning, HasFreeParking: accomodation.HasFreeParking, MinimimGuests: accomodation.MinimimGuests, MaximumGuests: accomodation.MaximumGuests, Images: []string{}}
+	return AccomodationDTO{Id: accomodation.ID, 
+		Name: accomodation.Name, 
+		Address: accomodation.Address, 
+		HasWifi: accomodation.HasWifi, 
+		HasKitchen: accomodation.HasKitchen, 
+		HasAirConditioning: accomodation.HasAirConditioning, 
+		HasFreeParking: accomodation.HasFreeParking, 
+		MinimimGuests: accomodation.MinimimGuests, 
+		MaximumGuests: accomodation.MaximumGuests, 
+		Images: []string{}, 
+		UserId: accomodation.UserId}
 }
 
 type AccomodationImage struct {

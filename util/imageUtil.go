@@ -14,6 +14,10 @@ import (
 )
 
 func SaveHeaderFileImages(files []*multipart.FileHeader) ([]string, error) {
+	if len(files) == 0 {
+		return nil, errors.New("you have to provide at least one image")
+	}
+
 	fileNames := []string{}
 	for _, fileHeader := range files {
 

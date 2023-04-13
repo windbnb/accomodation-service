@@ -11,8 +11,8 @@ import (
 
 var (
 	accomodations = []model.Accomodation{
-		{Name: "Vila Marija",  Address: "Maksima Gorkog 17a, Novi Sad", HasWifi: true, HasKitchen: true, HasAirConditioning: true, HasFreeParking: false, MinimimGuests: 2, MaximumGuests: 5},
-		{Name: "Lanterna",  Address: "Ljubice Ravasi 32, Novi Sad", HasWifi: true, HasKitchen: false, HasAirConditioning: false, HasFreeParking: true, MinimimGuests: 4, MaximumGuests: 4},
+		{Name: "Vila Marija",  Address: "Maksima Gorkog 17a, Novi Sad", HasWifi: true, HasKitchen: true, HasAirConditioning: true, HasFreeParking: false, MinimimGuests: 2, MaximumGuests: 5, UserId: 1},
+		{Name: "Lanterna",  Address: "Ljubice Ravasi 32, Novi Sad", HasWifi: true, HasKitchen: false, HasAirConditioning: false, HasFreeParking: true, MinimimGuests: 4, MaximumGuests: 4, UserId: 1},
 	}
 	accomodationImages = []model.AccomodationImage{
 		{ImageName: "slika1.jpg", AccomodationID: 1},

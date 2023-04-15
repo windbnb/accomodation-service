@@ -11,5 +11,7 @@ func ConfigureRouter(handler *handler.Handler) *mux.Router {
 
 	router.HandleFunc("/api/accomodation/image/{filename}", handler.ImageHandler).Methods("GET")
 
+	router.HandleFunc("/api/accomodation/delete-all/{hostId}", handler.DeleteHostAccomodation).Methods("DELETE")
+
 	return router
 }

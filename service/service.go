@@ -16,3 +16,7 @@ func (s *AccomodationService) SaveAccomodation(accomodation model.Accomodation) 
 func (s *AccomodationService) SaveAccomodationImage(image model.AccomodationImage) (model.AccomodationImage) {
 	return s.Repo.SaveAccomodationImage(image)
 }
+
+func (s *AccomodationService) DeleteHostAccomodation(hostId uint) error {
+	return s.Repo.DeleteHostAccomodation(hostId)
+}

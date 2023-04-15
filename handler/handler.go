@@ -76,3 +76,25 @@ func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.ServeFile(w, r, "./images/" + filename)
 }
+
+func (h *Handler) DeleteHostAccomodation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	hostId, err := strconv.ParseUint(params["hostId"], 10, 32)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "cannot parse host id", StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	err = h.Service.DeleteHostAccomodation(uint(hostId))
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

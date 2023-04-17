@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/jinzhu/gorm"
 	"github.com/windbnb/accomodation-service/model"
 )
@@ -17,4 +20,116 @@ func (r *Repository) SaveAccomodation(accomodation model.Accomodation) model.Acc
 func (r *Repository) SaveAccomodationImage(image model.AccomodationImage) model.AccomodationImage {
 	r.Db.Create(&image)
 	return image
+}
+
+func (r *Repository) SavePrice(price model.Price) model.Price {
+	r.Db.Create(&price)
+	return price
+}
+
+func (r *Repository) SaveAvailableTerm(availableTerm model.AvailableTerm) model.AvailableTerm {
+	r.Db.Create(&availableTerm)
+	return availableTerm
+}
+
+func (r *Repository) SaveReservedTerm(reservedTerm model.ReservedTerm) model.ReservedTerm {
+	r.Db.Create(&reservedTerm)
+	return reservedTerm
+}
+
+func (r *Repository) UpdatePrice(price model.Price) model.Price {
+	r.Db.Save(&price)
+	return price
+}
+
+func (r *Repository) UpdateAvailableTerm(availableTerm model.AvailableTerm) model.AvailableTerm {
+	r.Db.Save(&availableTerm)
+	return availableTerm
+}
+
+func (r *Repository) FindAccomodationById(id uint) (model.Accomodation, error) {
+	var accomodation model.Accomodation
+
+	r.Db.First(&accomodation, id)
+
+	if accomodation.ID == 0 {
+		return model.Accomodation{}, errors.New("there is no accomodation with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	return accomodation, nil
+}
+
+func (r *Repository) FindPriceById(id uint64) (model.Price, error) {
+	var price model.Price
+
+	r.Db.First(&price, id)
+
+	if price.ID == 0 {
+		return model.Price{}, errors.New("there is no price with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	return price, nil
+}
+
+func (r *Repository) FindAvailableTermById(id uint64) (model.AvailableTerm, error) {
+	var availableTerm model.AvailableTerm
+
+	r.Db.First(&availableTerm, id)
+
+	if availableTerm.ID == 0 {
+		return model.AvailableTerm{}, errors.New("there is no available term with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	return availableTerm, nil
+}
+
+func (r *Repository) FindReservedTermById(id uint64) (model.ReservedTerm, error) {
+	var reservedTerm model.ReservedTerm
+
+	r.Db.First(&reservedTerm, id)
+
+	if reservedTerm.ID == 0 {
+		return model.ReservedTerm{}, errors.New("there is no reserved term with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	return reservedTerm, nil
+}
+
+func (r *Repository) DeletePrice(id uint64) error {
+	var price model.Price
+
+	r.Db.First(&price, id)
+
+	if price.ID == 0 {
+		return errors.New("there is no price with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	r.Db.Delete(&model.Price{}, id)
+	return nil
+}
+
+func (r *Repository) DeleteAvailableTerm(id uint64) error {
+	var availableTerm model.AvailableTerm
+
+	r.Db.First(&availableTerm, id)
+
+	if availableTerm.ID == 0 {
+		return errors.New("there is no available term with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	r.Db.Delete(&model.AvailableTerm{}, id)
+	return nil
+}
+
+func (r *Repository) DeleteReservedTerm(id uint64) error {
+	var reservedTerm model.ReservedTerm
+
+	r.Db.First(&reservedTerm, id)
+
+	if reservedTerm.ID == 0 {
+		return errors.New("there is no reserved term with id " + strconv.FormatUint(uint64(id), 10))
+	}
+
+	r.Db.Delete(&model.ReservedTerm{}, id)
+	return nil
 }

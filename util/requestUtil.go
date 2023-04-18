@@ -10,7 +10,7 @@ import (
 )
 
 var BaseUserServicePathRoundRobin, _ = roundrobin.New(
-    &url.URL{Host: "http://localhost:8081"},
+	&url.URL{Host: "http://localhost:8081"},
 )
 
 func ParseMultipartAccomodation(r *http.Request) model.Accomodation {
@@ -22,6 +22,48 @@ func ParseMultipartAccomodation(r *http.Request) model.Accomodation {
 	hasFreeParking, _ := strconv.ParseBool(r.MultipartForm.Value["hasFreeParking"][0])
 	minimimGuests, _ := strconv.ParseUint(r.MultipartForm.Value["minimumGuests"][0], 10, 32)
 	maximumGuests, _ := strconv.ParseUint(r.MultipartForm.Value["maximumGuests"][0], 10, 32)
-	
+
 	return model.Accomodation{Name: name, Address: address, HasWifi: hasWifi, HasKitchen: hasKitchen, HasAirConditioning: hasAirConditioning, HasFreeParking: hasFreeParking, MinimimGuests: uint(minimimGuests), MaximumGuests: uint(maximumGuests), UserId: 0}
+}
+
+func FromCreatePriceDTOToPrice(price model.CreatePriceDTO) model.Price {
+
+	return model.Price{
+		StartDate:      price.StartDate,
+		EndDate:        price.EndDate,
+		Value:          price.Value,
+		PriceType:      price.PriceType,
+		PriceDuration:  price.PriceDuration,
+		AccomodationID: price.AccomodationID}
+}
+
+func FromUpdatePriceDTOToPrice(price model.UpdatePriceDTO) model.Price {
+
+	return model.Price{
+		StartDate: price.StartDate,
+		EndDate:   price.EndDate,
+		Value:     price.Value}
+}
+
+func FromCreateAvailableTermDTOToAvailableTerm(availableTerm model.CreateAvailableTermDTO) model.AvailableTerm {
+
+	return model.AvailableTerm{
+		StartDate:      availableTerm.StartDate,
+		EndDate:        availableTerm.EndDate,
+		AccomodationID: availableTerm.AccomodationID}
+}
+
+func FromUpdateAvailableTermDTOToAvailableTerm(availableTerm model.UpdateAvailableTermDTO) model.AvailableTerm {
+
+	return model.AvailableTerm{
+		StartDate: availableTerm.StartDate,
+		EndDate:   availableTerm.EndDate}
+}
+
+func FromCreateReservedTermDTOToReservedTerm(reservedTerm model.CreateReservedTermDTO) model.ReservedTerm {
+
+	return model.ReservedTerm{
+		StartDate:      reservedTerm.StartDate,
+		EndDate:        reservedTerm.EndDate,
+		AccomodationID: reservedTerm.AccomodationID}
 }

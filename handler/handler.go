@@ -57,7 +57,7 @@ func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 		h.Service.SaveAccomodationImage(model.AccomodationImage{ImageName: imageName, AccomodationID: savedAccomodation.ID})
 		accomodationDTO.Images = append(accomodationDTO.Images, imageName)
 	}
-	
+
 	json.NewEncoder(w).Encode(accomodationDTO)
 }
 
@@ -74,5 +74,172 @@ func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "./images/" + filename)
+	http.ServeFile(w, r, "./images/"+filename)
+}
+
+func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var createPricesDTO []model.CreatePriceDTO
+	json.NewDecoder(r.Body).Decode(&createPricesDTO)
+
+	var pricesDTO []model.PriceDTO
+
+	for _, createPriceDTO := range createPricesDTO {
+		newPrice := util.FromCreatePriceDTOToPrice(createPriceDTO)
+		_, err := h.Service.FindAccomodationById(newPrice.AccomodationID)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+			return
+		}
+		savedPrice := h.Service.SavePrice(newPrice)
+		priceDTO := savedPrice.ToDTO()
+		pricesDTO = append(pricesDTO, priceDTO)
+	}
+
+	json.NewEncoder(w).Encode(pricesDTO)
+
+}
+
+func (h *Handler) UpdatePrice(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	priceId, _ := strconv.ParseUint(params["id"], 10, 32)
+
+	var updatePriceDTO model.UpdatePriceDTO
+	json.NewDecoder(r.Body).Decode(&updatePriceDTO)
+
+	newPrice := util.FromUpdatePriceDTOToPrice(updatePriceDTO)
+
+	savedPrice, err := h.Service.UpdatePrice(newPrice, priceId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
+	priceDTO := savedPrice.ToDTO()
+
+	json.NewEncoder(w).Encode(priceDTO)
+
+}
+
+func (h *Handler) DeletePrice(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	priceId, _ := strconv.ParseUint(params["id"], 10, 32)
+
+	err := h.Service.DeletePrice(priceId)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+}
+
+func (h *Handler) CreateAvailableTerm(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var createAvailableTermsDTO []model.CreateAvailableTermDTO
+	json.NewDecoder(r.Body).Decode(&createAvailableTermsDTO)
+
+	var availableTermsDTO []model.AvailableTermDTO
+
+	for _, createAvailableTermDTO := range createAvailableTermsDTO {
+		newAvailableTerm := util.FromCreateAvailableTermDTOToAvailableTerm(createAvailableTermDTO)
+		_, err := h.Service.FindAccomodationById(newAvailableTerm.AccomodationID)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+			return
+		}
+		savedAvailableTerm := h.Service.SaveAvailableTerm(newAvailableTerm)
+		availableTermDTO := savedAvailableTerm.ToDTO()
+		availableTermsDTO = append(availableTermsDTO, availableTermDTO)
+	}
+
+	json.NewEncoder(w).Encode(availableTermsDTO)
+
+}
+
+func (h *Handler) UpdateAvailableTerm(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	availableTermId, _ := strconv.ParseUint(params["id"], 10, 32)
+
+	var updateAvailableTermDTO model.UpdateAvailableTermDTO
+	json.NewDecoder(r.Body).Decode(&updateAvailableTermDTO)
+
+	newAvailableTerm := util.FromUpdateAvailableTermDTOToAvailableTerm(updateAvailableTermDTO)
+
+	savedAvailableTerm, err := h.Service.UpdateAvailableTerm(newAvailableTerm, availableTermId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
+	availableTermDTO := savedAvailableTerm.ToDTO()
+
+	json.NewEncoder(w).Encode(availableTermDTO)
+
+}
+
+func (h *Handler) DeleteAvailableTerm(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	availableTermId, _ := strconv.ParseUint(params["id"], 10, 32)
+
+	err := h.Service.DeleteAvailableTerm(availableTermId)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+}
+
+func (h *Handler) CreateReservedTerm(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var createReservedTermDTO model.CreateReservedTermDTO
+	json.NewDecoder(r.Body).Decode(&createReservedTermDTO)
+
+	newReservedTerm := util.FromCreateReservedTermDTOToReservedTerm(createReservedTermDTO)
+	_, err := h.Service.FindAccomodationById(newReservedTerm.AccomodationID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
+	savedReservedTerm := h.Service.SaveReservedTerm(newReservedTerm)
+	reservedTermDTO := savedReservedTerm.ToDTO()
+
+	json.NewEncoder(w).Encode(reservedTermDTO)
+
+}
+
+func (h *Handler) DeleteReservedTerm(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	reservedTermId, _ := strconv.ParseUint(params["id"], 10, 32)
+
+	err := h.Service.DeleteReservedTerm(reservedTermId)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
 }

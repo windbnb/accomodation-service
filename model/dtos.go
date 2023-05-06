@@ -18,6 +18,14 @@ type AccomodationDTO struct {
 	UserId             uint     `json:"userId"`
 }
 
+type AccommodationBasicDTO struct {
+	Id             uint            `json:"id"`
+	MinimimGuests  uint            `json:"minimimGuests"`
+	MaximumGuests  uint            `json:"maximumGuests"`
+	AvailableTerms []AvailableTerm `json:"availableTerms"`
+	UserID         uint            `json:"userID"`
+}
+
 type ErrorResponse struct {
 	Message    string `json:"message"`
 	StatusCode int    `json:"statusCode"`

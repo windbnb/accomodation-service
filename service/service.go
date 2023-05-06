@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/windbnb/accomodation-service/model"
 	"github.com/windbnb/accomodation-service/repository"
@@ -129,4 +130,16 @@ func (service *AccomodationService) FindReservedTermById(id uint64) (model.Reser
 	}
 
 	return reservedTerm, nil
+}
+
+func (service *AccomodationService) FindAvailableTerms(accommodationId uint) ([]model.AvailableTerm, error) {
+	_, err := service.Repo.FindAccomodationById(accommodationId)
+
+	if err != nil {
+		return []model.AvailableTerm{}, errors.New("accommodation with given id does not exist")
+	}
+
+	var availableTerms = service.Repo.FindAvailableTermAfter(accommodationId, time.Now())
+
+	return availableTerms, nil
 }

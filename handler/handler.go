@@ -61,6 +61,29 @@ func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(accomodationDTO)
 }
 
+func (h *Handler) FindAccommodationById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	accomodationId, _ := strconv.Atoi(params["id"])
+
+	accomodation, err := h.Service.FindAccomodationById(uint(accomodationId))
+	availalbleTerms, err2 := h.Service.FindAvailableTerms(uint(accomodationId))
+	if err != nil || err2 != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
+		return
+	}
+
+	var returnedValue = model.AccommodationBasicDTO{
+		Id:             accomodation.ID,
+		MaximumGuests:  accomodation.MaximumGuests,
+		MinimimGuests:  accomodation.MinimimGuests,
+		AvailableTerms: availalbleTerms}
+
+	json.NewEncoder(w).Encode(returnedValue)
+}
+
 func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	filename := params["filename"]

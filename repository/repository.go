@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/windbnb/accomodation-service/model"
@@ -96,6 +97,14 @@ func (r *Repository) FindAvailableTermById(id uint64) (model.AvailableTerm, erro
 	}
 
 	return availableTerm, nil
+}
+
+func (r *Repository) FindAvailableTermAfter(accommodationId uint, after time.Time) []model.AvailableTerm {
+	availableTerms := &[]model.AvailableTerm{}
+
+	r.Db.Where("accomodation_id = ? and (start_date <= ? or end_date <= ?)", accommodationId, after, after).Find(availableTerms)
+
+	return *availableTerms
 }
 
 func (r *Repository) FindReservedTermById(id uint64) (model.ReservedTerm, error) {

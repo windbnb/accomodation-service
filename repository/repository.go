@@ -35,7 +35,7 @@ func (r *Repository) DeleteHostAccomodation(hostId uint) error {
 	} else if result.RowsAffected == 0 {
 		return errors.New("there are no accomodations for host with given id")
 	}
-  return nil
+	return nil
 }
 
 func (r *Repository) SavePrice(price model.Price) model.Price {
@@ -61,6 +61,11 @@ func (r *Repository) UpdatePrice(price model.Price) model.Price {
 func (r *Repository) UpdateAvailableTerm(availableTerm model.AvailableTerm) model.AvailableTerm {
 	r.Db.Save(&availableTerm)
 	return availableTerm
+}
+
+func (r *Repository) UpdateAccommodation(accommodation model.Accomodation) model.Accomodation {
+	r.Db.Save(&accommodation)
+	return accommodation
 }
 
 func (r *Repository) FindAccomodationById(id uint) (model.Accomodation, error) {

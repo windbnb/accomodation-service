@@ -8,17 +8,18 @@ import (
 
 type Accomodation struct {
 	gorm.Model
-	Name               string
-	Address            string
-	HasWifi            bool
-	HasKitchen         bool
-	HasAirConditioning bool
-	HasFreeParking     bool
-	MinimimGuests      uint
-	MaximumGuests      uint
-	Images             []AccomodationImage
-	UserId             uint
-	Prices             []Price
+	Name                  string
+	Address               string
+	HasWifi               bool
+	HasKitchen            bool
+	HasAirConditioning    bool
+	HasFreeParking        bool
+	MinimimGuests         uint
+	MaximumGuests         uint
+	Images                []AccomodationImage
+	UserId                uint
+	Prices                []Price
+	AcceptReservationType AcceptReservationType
 }
 
 type PriceType string
@@ -62,16 +63,17 @@ type AvailableTerm struct {
 
 func (accomodation *Accomodation) ToDTO() AccomodationDTO {
 	return AccomodationDTO{Id: accomodation.ID,
-		Name:               accomodation.Name,
-		Address:            accomodation.Address,
-		HasWifi:            accomodation.HasWifi,
-		HasKitchen:         accomodation.HasKitchen,
-		HasAirConditioning: accomodation.HasAirConditioning,
-		HasFreeParking:     accomodation.HasFreeParking,
-		MinimimGuests:      accomodation.MinimimGuests,
-		MaximumGuests:      accomodation.MaximumGuests,
-		Images:             []string{},
-		UserId:             accomodation.UserId}
+		Name:                  accomodation.Name,
+		Address:               accomodation.Address,
+		HasWifi:               accomodation.HasWifi,
+		HasKitchen:            accomodation.HasKitchen,
+		HasAirConditioning:    accomodation.HasAirConditioning,
+		HasFreeParking:        accomodation.HasFreeParking,
+		MinimimGuests:         accomodation.MinimimGuests,
+		MaximumGuests:         accomodation.MaximumGuests,
+		Images:                []string{},
+		UserId:                accomodation.UserId,
+		AcceptReservationType: accomodation.AcceptReservationType}
 }
 
 type AccomodationImage struct {
@@ -79,6 +81,13 @@ type AccomodationImage struct {
 	ImageName      string
 	AccomodationID uint
 }
+
+type AcceptReservationType string
+
+const (
+	MANUAL        AcceptReservationType = "MANUAL"
+	AUTOMATICALLY AcceptReservationType = "AUTOMATICALLY"
+)
 
 func (price *Price) ToDTO() PriceDTO {
 	return PriceDTO{Id: price.ID,

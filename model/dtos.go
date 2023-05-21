@@ -5,25 +5,27 @@ import (
 )
 
 type AccomodationDTO struct {
-	Id                 uint     `json:"id"`
-	Name               string   `json:"statusCode"`
-	Address            string   `json:"address"`
-	HasWifi            bool     `json:"hasWifi"`
-	HasKitchen         bool     `json:"hasKitchen"`
-	HasAirConditioning bool     `json:"hasAirConditioning"`
-	HasFreeParking     bool     `json:"hasFreeParking"`
-	MinimimGuests      uint     `json:"minimimGuests"`
-	MaximumGuests      uint     `json:"maximumGuests"`
-	Images             []string `json:"images"`
-	UserId             uint     `json:"userId"`
+	Id                    uint                  `json:"id"`
+	Name                  string                `json:"statusCode"`
+	Address               string                `json:"address"`
+	HasWifi               bool                  `json:"hasWifi"`
+	HasKitchen            bool                  `json:"hasKitchen"`
+	HasAirConditioning    bool                  `json:"hasAirConditioning"`
+	HasFreeParking        bool                  `json:"hasFreeParking"`
+	MinimimGuests         uint                  `json:"minimimGuests"`
+	MaximumGuests         uint                  `json:"maximumGuests"`
+	Images                []string              `json:"images"`
+	UserId                uint                  `json:"userId"`
+	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
 }
 
 type AccommodationBasicDTO struct {
-	Id             uint            `json:"id"`
-	MinimimGuests  uint            `json:"minimimGuests"`
-	MaximumGuests  uint            `json:"maximumGuests"`
-	AvailableTerms []AvailableTerm `json:"availableTerms"`
-	UserID         uint            `json:"userID"`
+	Id                    uint                  `json:"id"`
+	MinimimGuests         uint                  `json:"minimimGuests"`
+	MaximumGuests         uint                  `json:"maximumGuests"`
+	AvailableTerms        []AvailableTerm       `json:"availableTerms"`
+	UserID                uint                  `json:"userID"`
+	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
 }
 
 type ErrorResponse struct {
@@ -104,4 +106,8 @@ type ReservedTermDTO struct {
 	StartDate      time.Time `json:"startDate"`
 	EndDate        time.Time `json:"endDate"`
 	AccomodationID uint      `json:"accomodationId"`
+}
+
+type AcceptReservationTypeDTO struct {
+	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
 }

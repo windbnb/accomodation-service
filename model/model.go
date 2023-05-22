@@ -18,6 +18,7 @@ type Accomodation struct {
 	MaximumGuests      uint
 	Images             []AccomodationImage
 	UserId             uint
+	PriceType          PriceType
 	Prices             []Price
 }
 
@@ -41,9 +42,9 @@ type Price struct {
 	StartDate      time.Time
 	EndDate        time.Time
 	Value          float32
-	PriceType      PriceType
 	PriceDuration  PriceDuration
 	AccomodationID uint
+	Active         bool
 }
 
 type ReservedTerm struct {
@@ -71,7 +72,8 @@ func (accomodation *Accomodation) ToDTO() AccomodationDTO {
 		MinimimGuests:      accomodation.MinimimGuests,
 		MaximumGuests:      accomodation.MaximumGuests,
 		Images:             []string{},
-		UserId:             accomodation.UserId}
+		UserId:             accomodation.UserId,
+		PriceType:          accomodation.PriceType}
 }
 
 type AccomodationImage struct {
@@ -85,7 +87,6 @@ func (price *Price) ToDTO() PriceDTO {
 		StartDate:      price.StartDate,
 		EndDate:        price.EndDate,
 		Value:          price.Value,
-		PriceType:      price.PriceType,
 		PriceDuration:  price.PriceDuration,
 		AccomodationID: price.AccomodationID}
 }

@@ -110,6 +110,7 @@ func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 
 	for _, createPriceDTO := range createPricesDTO {
 		newPrice := util.FromCreatePriceDTOToPrice(createPriceDTO)
+		newPrice.Active = true
 		_, err := h.Service.FindAccomodationById(newPrice.AccomodationID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -287,4 +288,15 @@ func (h *Handler) DeleteHostAccomodation(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) SearchAccomodation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var searchAccomodationDTO model.SearchAccomodationDTO
+	json.NewDecoder(r.Body).Decode(&searchAccomodationDTO)
+
+	accomodationsDTO := h.Service.SearchAccomodations(searchAccomodationDTO)
+	json.NewEncoder(w).Encode(accomodationsDTO)
+
 }

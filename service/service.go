@@ -147,3 +147,48 @@ func (service *AccomodationService) FindAvailableTerms(accommodationId uint) ([]
 
 	return availableTerms, nil
 }
+
+func (service *AccomodationService) CalculatePrice(accommodation model.Accomodation, searchAccomodationDTO model.SearchAccomodationDTO) (float32, float32) {
+	prices := service.Repo.FindPricesForAccomodation(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate)
+	var basePrice float32 = 0
+	for _, price := range prices {
+		if price.PriceDuration == model.HOLIDAY || price.PriceDuration == model.WEEKEND {
+			basePrice = price.Value
+			break
+		} else {
+			basePrice = price.Value
+		}
+	}
+
+	var totalPrice float32 = 0
+	if accommodation.PriceType == model.PER_GUEST {
+		totalPrice = float32(searchAccomodationDTO.NumberOfGuests) * basePrice * float32(searchAccomodationDTO.EndDate.Sub(searchAccomodationDTO.StartDate).Hours()/24)
+	} else {
+		totalPrice = basePrice
+	}
+
+	return basePrice, totalPrice
+}
+
+func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO model.SearchAccomodationDTO) []model.SearchAccomodationReturnDTO {
+	accomodations := service.Repo.FindAccomodationByGuestsAndAddress(searchAccomodationDTO.NumberOfGuests, searchAccomodationDTO.Address)
+
+	var availableAccomodations []model.SearchAccomodationReturnDTO
+	for _, accommodation := range accomodations {
+		if service.Repo.IsAvailable(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate) == true {
+			if service.Repo.IsReserved(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate) == false {
+				basePrice, totalPrice := service.CalculatePrice(accommodation, searchAccomodationDTO)
+				accomodationDTO := accommodation.ToDTO()
+				var searchAccomodationReturnDTO model.SearchAccomodationReturnDTO
+				searchAccomodationReturnDTO.Accomodation = accomodationDTO
+				searchAccomodationReturnDTO.Price = basePrice
+				searchAccomodationReturnDTO.TotalPrice = totalPrice
+				searchAccomodationReturnDTO.StartDate = searchAccomodationDTO.StartDate
+				searchAccomodationReturnDTO.EndDate = searchAccomodationDTO.EndDate
+				searchAccomodationReturnDTO.NumberOfGuests = searchAccomodationDTO.NumberOfGuests
+				availableAccomodations = append(availableAccomodations, searchAccomodationReturnDTO)
+			}
+		}
+	}
+	return availableAccomodations
+}

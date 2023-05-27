@@ -17,6 +17,7 @@ type AccomodationDTO struct {
 	Images                []string              `json:"images"`
 	UserId                uint                  `json:"userId"`
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
+  PriceType             PriceType             `json:"priceType"`
 }
 
 type AccommodationBasicDTO struct {
@@ -54,7 +55,6 @@ type CreatePriceDTO struct {
 	StartDate      time.Time     `json:"startDate"`
 	EndDate        time.Time     `json:"endDate"`
 	Value          float32       `json:"value"`
-	PriceType      PriceType     `json:"priceType"`
 	PriceDuration  PriceDuration `json:"priceDuration"`
 	AccomodationID uint          `json:"accomodationId"`
 }
@@ -71,7 +71,6 @@ type PriceDTO struct {
 	StartDate      time.Time     `json:"startDate"`
 	EndDate        time.Time     `json:"endDate"`
 	Value          float32       `json:"value"`
-	PriceType      PriceType     `json:"priceType"`
 	PriceDuration  PriceDuration `json:"priceDuration"`
 	AccomodationID uint          `json:"accomodationId"`
 }
@@ -110,4 +109,20 @@ type ReservedTermDTO struct {
 
 type AcceptReservationTypeDTO struct {
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
+}
+  
+type SearchAccomodationDTO struct {
+	Address        string    `json:"address"`
+	NumberOfGuests uint      `json:"numberOfGuests"`
+	StartDate      time.Time `json:"startDate"`
+	EndDate        time.Time `json:"endDate"`
+}
+
+type SearchAccomodationReturnDTO struct {
+	Accomodation   AccomodationDTO `json:"accomodation"`
+	NumberOfGuests uint            `json:"numberOfGuests"`
+	StartDate      time.Time       `json:"startDate"`
+	EndDate        time.Time       `json:"endDate"`
+	Price          float32         `json:"price"`
+	TotalPrice     float32         `json:"totalPrice"`
 }

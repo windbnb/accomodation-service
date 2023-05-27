@@ -162,3 +162,41 @@ func (r *Repository) DeleteReservedTerm(id uint64) error {
 	r.Db.Delete(&model.ReservedTerm{}, id)
 	return nil
 }
+
+func (r *Repository) FindAccomodationByGuestsAndAddress(numberOfGuests uint, address string) []model.Accomodation {
+	accomodations := &[]model.Accomodation{}
+
+	r.Db.Find(&accomodations, "address LIKE ? AND minimim_guests <= ? AND maximum_guests >= ?", "%"+address+"%", numberOfGuests, numberOfGuests)
+
+	return *accomodations
+}
+
+func (r *Repository) IsReserved(accomodationId uint, startDate time.Time, endDate time.Time) bool {
+	count := int64(0)
+
+	r.Db.Model(&model.ReservedTerm{}).Where("accomodation_id = ? AND start_date <= ? AND end_date >= ?", accomodationId, endDate, startDate).Count(&count)
+
+	if count > 0 {
+		return true
+	}
+	return false
+}
+
+func (r *Repository) IsAvailable(accomodationId uint, startDate time.Time, endDate time.Time) bool {
+	count := int64(0)
+
+	r.Db.Model(&model.AvailableTerm{}).Where("accomodation_id = ? AND start_date <= ? AND end_date >= ?", accomodationId, endDate, startDate).Count(&count)
+
+	if count > 0 {
+		return true
+	}
+	return false
+}
+
+func (r *Repository) FindPricesForAccomodation(accomodationId uint, startDate time.Time, endDate time.Time) []model.Price {
+	prices := &[]model.Price{}
+
+	r.Db.Find(&prices, "accomodation_id = ? AND start_date <= ? AND end_date >= ? AND active = true", accomodationId, endDate, startDate)
+
+	return *prices
+}

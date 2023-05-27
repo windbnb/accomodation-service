@@ -12,8 +12,8 @@ import (
 
 var (
 	accomodations = []model.Accomodation{
-		{Name: "Vila Marija", Address: "Maksima Gorkog 17a, Novi Sad", HasWifi: true, HasKitchen: true, HasAirConditioning: true, HasFreeParking: false, MinimimGuests: 2, MaximumGuests: 5, UserId: 1, AcceptReservationType: model.MANUAL},
-		{Name: "Lanterna", Address: "Ljubice Ravasi 32, Novi Sad", HasWifi: true, HasKitchen: false, HasAirConditioning: false, HasFreeParking: true, MinimimGuests: 4, MaximumGuests: 4, UserId: 1, AcceptReservationType: model.AUTOMATICALLY},
+		{Name: "Vila Marija", Address: "Maksima Gorkog 17a, Novi Sad", HasWifi: true, HasKitchen: true, HasAirConditioning: true, HasFreeParking: false, MinimimGuests: 2, MaximumGuests: 5, UserId: 1, AcceptReservationType: model.MANUAL, PriceType: model.PER_GUEST},
+		{Name: "Lanterna", Address: "Ljubice Ravasi 32, Novi Sad", HasWifi: true, HasKitchen: false, HasAirConditioning: false, HasFreeParking: true, MinimimGuests: 4, MaximumGuests: 4, UserId: 1, AcceptReservationType: model.AUTOMATICALLY, PriceType: model.PER_GUEST},
 	}
 	accomodationImages = []model.AccomodationImage{
 		{ImageName: "slika1.jpg", AccomodationID: 1},
@@ -23,11 +23,11 @@ var (
 
 	prices = []model.Price{
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
-			Value: 3000, PriceType: model.PER_GUEST, PriceDuration: model.REGULAR, AccomodationID: 1},
-		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
-			Value: 5000, PriceType: model.PER_GUEST, PriceDuration: model.WEEKEND, AccomodationID: 1},
+			Value: 3000, PriceDuration: model.REGULAR, AccomodationID: 1, Active: true},
+		{StartDate: time.Date(2023, 6, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 6, 5, 10, 0, 0, 0, time.Local),
+			Value: 5000, PriceDuration: model.HOLIDAY, AccomodationID: 1, Active: true},
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 6, 1, 10, 0, 0, 0, time.Local),
-			Value: 3500, PriceType: model.PER_ACCOMODATION_UNIT, PriceDuration: model.REGULAR, AccomodationID: 2},
+			Value: 3500, PriceDuration: model.REGULAR, AccomodationID: 2, Active: true},
 	}
 
 	availableTerms = []model.AvailableTerm{

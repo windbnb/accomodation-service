@@ -9,6 +9,7 @@ func ConfigureRouter(handler *handler.Handler) *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/accomodation", handler.CreateAccomodation).Methods("POST")
 	router.HandleFunc("/api/accomodation/{id}", handler.FindAccommodationById).Methods("GET")
+	router.HandleFunc("/api/accomodation/{id}/acceptReservationType", handler.UpdateAccommodationAcceptReservationType).Methods("PUT")
 	router.HandleFunc("/api/accomodation/search/available", handler.SearchAccomodation).Methods("GET")
 
 	router.HandleFunc("/api/accomodation/image/{filename}", handler.ImageHandler).Methods("GET")

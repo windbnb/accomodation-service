@@ -24,7 +24,20 @@ func ParseMultipartAccomodation(r *http.Request) model.Accomodation {
 	maximumGuests, _ := strconv.ParseUint(r.MultipartForm.Value["maximumGuests"][0], 10, 32)
 	priceType := r.MultipartForm.Value["priceType"][0]
 
-	return model.Accomodation{Name: name, Address: address, HasWifi: hasWifi, HasKitchen: hasKitchen, HasAirConditioning: hasAirConditioning, HasFreeParking: hasFreeParking, MinimimGuests: uint(minimimGuests), MaximumGuests: uint(maximumGuests), UserId: 0, PriceType: model.PriceType(priceType)}
+	defaultAcceptReservationType := model.MANUAL
+
+	return model.Accomodation{
+		Name:                  name,
+		Address:               address,
+		HasWifi:               hasWifi,
+		HasKitchen:            hasKitchen,
+		HasAirConditioning:    hasAirConditioning,
+		HasFreeParking:        hasFreeParking,
+		MinimimGuests:         uint(minimimGuests),
+		MaximumGuests:         uint(maximumGuests),
+		UserId:                0,
+		AcceptReservationType: defaultAcceptReservationType,
+    PriceType:             model.PriceType(priceType)}
 }
 
 func FromCreatePriceDTOToPrice(price model.CreatePriceDTO) model.Price {

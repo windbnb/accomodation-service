@@ -16,6 +16,26 @@ func (s *AccomodationService) SaveAccomodation(accomodation model.Accomodation) 
 	return s.Repo.SaveAccomodation(accomodation)
 }
 
+func (s *AccomodationService) UpdateAccommodationAcceptReservationType(accommodationId uint, acceptReservationType model.AcceptReservationType, hostId uint) (*model.Accomodation, error) {
+	if acceptReservationType != model.MANUAL && acceptReservationType != model.AUTOMATICALLY {
+		return nil, errors.New("Given type does not exist")
+	}
+
+	accommodation, err := s.Repo.FindAccomodationById(accommodationId)
+	if err != nil {
+		return nil, errors.New("Given accommodation does not exist.")
+	}
+
+	if hostId != accommodation.UserId {
+		return nil, errors.New("You don't have access to this entity.")
+	}
+
+	accommodation.AcceptReservationType = acceptReservationType
+	s.Repo.UpdateAccommodation(accommodation)
+
+	return &accommodation, nil
+}
+
 func (s *AccomodationService) SaveAccomodationImage(image model.AccomodationImage) model.AccomodationImage {
 	return s.Repo.SaveAccomodationImage(image)
 }

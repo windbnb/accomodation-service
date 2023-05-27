@@ -61,6 +61,43 @@ func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(accomodationDTO)
 }
 
+func (h *Handler) UpdateAccommodationAcceptReservationType(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	accomodationId, _ := strconv.Atoi(params["id"])
+
+	var acceptReservationType *model.AcceptReservationTypeDTO
+	err := json.NewDecoder(r.Body).Decode(&acceptReservationType)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	tokenString := r.Header.Get("Authorization")
+	userResponse, err := client.AuthorizeHost(tokenString)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
+		return
+	}
+	if userResponse.Role != "HOST" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusUnauthorized})
+		return
+	}
+
+	accommodation, err := h.Service.UpdateAccommodationAcceptReservationType(uint(accomodationId), acceptReservationType.AcceptReservationType, userResponse.Id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	json.NewEncoder(w).Encode(accommodation)
+}
+
 func (h *Handler) FindAccommodationById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -76,10 +113,12 @@ func (h *Handler) FindAccommodationById(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var returnedValue = model.AccommodationBasicDTO{
-		Id:             accomodation.ID,
-		MaximumGuests:  accomodation.MaximumGuests,
-		MinimimGuests:  accomodation.MinimimGuests,
-		AvailableTerms: availalbleTerms}
+		Id:                    accomodation.ID,
+		MaximumGuests:         accomodation.MaximumGuests,
+		MinimimGuests:         accomodation.MinimimGuests,
+		AvailableTerms:        availalbleTerms,
+		UserID:                accomodation.UserId,
+		AcceptReservationType: accomodation.AcceptReservationType}
 
 	json.NewEncoder(w).Encode(returnedValue)
 }

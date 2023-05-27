@@ -63,6 +63,11 @@ func (r *Repository) UpdateAvailableTerm(availableTerm model.AvailableTerm) mode
 	return availableTerm
 }
 
+func (r *Repository) UpdateAccommodation(accommodation model.Accomodation) model.Accomodation {
+	r.Db.Save(&accommodation)
+	return accommodation
+}
+
 func (r *Repository) FindAccomodationById(id uint) (model.Accomodation, error) {
 	var accomodation model.Accomodation
 

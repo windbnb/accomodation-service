@@ -23,7 +23,7 @@ func main() {
 	db := util.ConnectToDatabase()
 	router := router.ConfigureRouter(&handler.Handler{Service: &service.AccomodationService{Repo: &repository.Repository{Db: db}}})
 
-	srv := &http.Server{Addr: "localhost:8082", Handler: router}
+	srv := &http.Server{Addr: "0.0.0.0:8082", Handler: router}
 	go func() {
 		log.Println("server starting")
 		if err := srv.ListenAndServe(); err != nil {

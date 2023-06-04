@@ -10,7 +10,7 @@ import (
 )
 
 var BaseUserServicePathRoundRobin, _ = roundrobin.New(
-	&url.URL{Host: "http://localhost:8081"},
+	&url.URL{Host: "http://nginx:8000"},
 )
 
 func ParseMultipartAccomodation(r *http.Request) model.Accomodation {
@@ -37,7 +37,7 @@ func ParseMultipartAccomodation(r *http.Request) model.Accomodation {
 		MaximumGuests:         uint(maximumGuests),
 		UserId:                0,
 		AcceptReservationType: defaultAcceptReservationType,
-    PriceType:             model.PriceType(priceType)}
+		PriceType:             model.PriceType(priceType)}
 }
 
 func FromCreatePriceDTOToPrice(price model.CreatePriceDTO) model.Price {

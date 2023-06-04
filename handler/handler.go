@@ -82,6 +82,7 @@ func (h *Handler) UpdateAccommodationAcceptReservationType(w http.ResponseWriter
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
 		return
 	}
+
 	if userResponse.Role != "HOST" {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusUnauthorized})
@@ -144,6 +145,20 @@ func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 
 	var createPricesDTO []model.CreatePriceDTO
 	json.NewDecoder(r.Body).Decode(&createPricesDTO)
+
+	tokenString := r.Header.Get("Authorization")
+	userResponse, err := client.AuthorizeHost(tokenString)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
+		return
+	}
+
+	if userResponse.Role != "HOST" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusUnauthorized})
+		return
+	}
 
 	var pricesDTO []model.PriceDTO
 
@@ -211,6 +226,20 @@ func (h *Handler) CreateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 	var createAvailableTermsDTO []model.CreateAvailableTermDTO
 	json.NewDecoder(r.Body).Decode(&createAvailableTermsDTO)
 
+	tokenString := r.Header.Get("Authorization")
+	userResponse, err := client.AuthorizeHost(tokenString)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
+		return
+	}
+
+	if userResponse.Role != "HOST" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusUnauthorized})
+		return
+	}
+
 	var availableTermsDTO []model.AvailableTermDTO
 
 	for _, createAvailableTermDTO := range createAvailableTermsDTO {
@@ -239,6 +268,20 @@ func (h *Handler) UpdateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 	var updateAvailableTermDTO model.UpdateAvailableTermDTO
 	json.NewDecoder(r.Body).Decode(&updateAvailableTermDTO)
 
+	tokenString := r.Header.Get("Authorization")
+	userResponse, err := client.AuthorizeHost(tokenString)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
+		return
+	}
+
+	if userResponse.Role != "HOST" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusUnauthorized})
+		return
+	}
+
 	newAvailableTerm := util.FromUpdateAvailableTermDTOToAvailableTerm(updateAvailableTermDTO)
 
 	savedAvailableTerm, err := h.Service.UpdateAvailableTerm(newAvailableTerm, availableTermId)
@@ -259,8 +302,22 @@ func (h *Handler) DeleteAvailableTerm(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	availableTermId, _ := strconv.ParseUint(params["id"], 10, 32)
 
-	err := h.Service.DeleteAvailableTerm(availableTermId)
+	tokenString := r.Header.Get("Authorization")
+	userResponse, err := client.AuthorizeHost(tokenString)
 	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
+		return
+	}
+
+	if userResponse.Role != "HOST" {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "user is not a host", StatusCode: http.StatusUnauthorized})
+		return
+	}
+
+	er := h.Service.DeleteAvailableTerm(availableTermId)
+	if er != nil {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
 		return

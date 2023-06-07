@@ -9,10 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/windbnb/accomodation-service/handler"
 	"github.com/windbnb/accomodation-service/repository"
 	"github.com/windbnb/accomodation-service/router"
 	"github.com/windbnb/accomodation-service/service"
+	"github.com/windbnb/accomodation-service/tracer"
 	"github.com/windbnb/accomodation-service/util"
 )
 
@@ -21,7 +23,13 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
 	db := util.ConnectToDatabase()
-	router := router.ConfigureRouter(&handler.Handler{Service: &service.AccomodationService{Repo: &repository.Repository{Db: db}}})
+
+	tracer, closer := tracer.Init("accomodation-service")
+	opentracing.SetGlobalTracer(tracer)
+	router := router.ConfigureRouter(&handler.Handler{
+		Tracer:  tracer,
+		Closer:  closer,
+		Service: &service.AccomodationService{Repo: &repository.Repository{Db: db}}})
 
 	srv := &http.Server{Addr: "0.0.0.0:8082", Handler: router}
 	go func() {
@@ -46,4 +54,5 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("server stopped")
+
 }

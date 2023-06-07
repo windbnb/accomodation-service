@@ -1,10 +1,17 @@
 version: "3"
+
+x-logging: &fluent-bit
+    driver: fluentd
+    options:
+        fluentd-address:  172.24.0.8:24224
+
 services:
   accomodation_db:
     image: postgres:13
     restart: always
     networks:
       - servers
+      - monitoring
     environment:
       POSTGRES_PASSWORD: root
       POSTGRES_USER: postgres
@@ -19,18 +26,28 @@ services:
     container_name: accomodation_db
     volumes:
       - accomodation-data:/var/lib/postgresql/data
+    logging: *fluent-bit
+    
 
   accomodation-service:
     build: .
     restart: on-failure
     networks:
       - servers
+      - monitoring
     container_name: accomodation-service
     environment:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: root
+      JAEGER_SERVICE_NAME: accomodation-service
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
     ports:
       - "8082:8082"
+    logging: *fluent-bit
     depends_on:
       accomodation_db:
         condition: service_healthy
@@ -40,4 +57,6 @@ volumes:
 
 networks:
   servers:
+    external: true
+  monitoring:
     external: true

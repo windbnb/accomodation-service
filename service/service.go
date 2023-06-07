@@ -1,28 +1,39 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
 	"github.com/windbnb/accomodation-service/model"
 	"github.com/windbnb/accomodation-service/repository"
+	"github.com/windbnb/accomodation-service/tracer"
 )
 
 type AccomodationService struct {
 	Repo *repository.Repository
 }
 
-func (s *AccomodationService) SaveAccomodation(accomodation model.Accomodation) model.Accomodation {
-	return s.Repo.SaveAccomodation(accomodation)
+func (s *AccomodationService) SaveAccomodation(accomodation model.Accomodation, ctx context.Context) model.Accomodation {
+	span := tracer.StartSpanFromContext(ctx, "saveAccomodationService")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return s.Repo.SaveAccomodation(accomodation, ctx)
 }
 
-func (s *AccomodationService) UpdateAccommodationAcceptReservationType(accommodationId uint, acceptReservationType model.AcceptReservationType, hostId uint) (*model.Accomodation, error) {
+func (s *AccomodationService) UpdateAccommodationAcceptReservationType(accommodationId uint, acceptReservationType model.AcceptReservationType, hostId uint, ctx context.Context) (*model.Accomodation, error) {
+	span := tracer.StartSpanFromContext(ctx, "acceptReservationTypeService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	if acceptReservationType != model.MANUAL && acceptReservationType != model.AUTOMATICALLY {
 		return nil, errors.New("Given type does not exist")
 	}
 
-	accommodation, err := s.Repo.FindAccomodationById(accommodationId)
+	accommodation, err := s.Repo.FindAccomodationById(accommodationId, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		return nil, errors.New("Given accommodation does not exist.")
 	}
 
@@ -31,7 +42,7 @@ func (s *AccomodationService) UpdateAccommodationAcceptReservationType(accommoda
 	}
 
 	accommodation.AcceptReservationType = acceptReservationType
-	s.Repo.UpdateAccommodation(accommodation)
+	s.Repo.UpdateAccommodation(accommodation, ctx)
 
 	return &accommodation, nil
 }
@@ -40,130 +51,185 @@ func (s *AccomodationService) SaveAccomodationImage(image model.AccomodationImag
 	return s.Repo.SaveAccomodationImage(image)
 }
 
-func (s *AccomodationService) DeleteHostAccomodation(hostId uint) error {
-	return s.Repo.DeleteHostAccomodation(hostId)
+func (s *AccomodationService) DeleteHostAccomodation(hostId uint, ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "deleteHostAccomodationService")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return s.Repo.DeleteHostAccomodation(hostId, ctx)
 }
 
 func (s *AccomodationService) SavePrice(price model.Price) model.Price {
 	return s.Repo.SavePrice(price)
 }
 
-func (s *AccomodationService) SaveAvailableTerm(availableTerm model.AvailableTerm) model.AvailableTerm {
-	return s.Repo.SaveAvailableTerm(availableTerm)
+func (s *AccomodationService) SaveAvailableTerm(availableTerm model.AvailableTerm, ctx context.Context) model.AvailableTerm {
+	span := tracer.StartSpanFromContext(ctx, "saveAvailableTermService")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return s.Repo.SaveAvailableTerm(availableTerm, ctx)
 }
 
-func (s *AccomodationService) SaveReservedTerm(reservedTerm model.ReservedTerm) model.ReservedTerm {
-	return s.Repo.SaveReservedTerm(reservedTerm)
+func (s *AccomodationService) SaveReservedTerm(reservedTerm model.ReservedTerm, ctx context.Context) model.ReservedTerm {
+	span := tracer.StartSpanFromContext(ctx, "saveReservedTermService")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return s.Repo.SaveReservedTerm(reservedTerm, ctx)
 }
 
-func (s *AccomodationService) UpdatePrice(price model.Price, id uint64) (model.Price, error) {
+func (s *AccomodationService) UpdatePrice(price model.Price, id uint64, ctx context.Context) (model.Price, error) {
+	span := tracer.StartSpanFromContext(ctx, "updatePriceService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	var priceToUpdate model.Price
 
-	priceToUpdate, _ = s.FindPriceById(id)
+	priceToUpdate, _ = s.FindPriceById(id, ctx)
 	if priceToUpdate.ID != 0 {
 		priceToUpdate.StartDate = price.StartDate
 		priceToUpdate.EndDate = price.EndDate
 		priceToUpdate.Value = price.Value
-		s.Repo.UpdatePrice(priceToUpdate)
+		s.Repo.UpdatePrice(priceToUpdate, ctx)
 	}
 
 	return priceToUpdate, nil
 }
 
-func (s *AccomodationService) UpdateAvailableTerm(availableTerm model.AvailableTerm, id uint64) (model.AvailableTerm, error) {
+func (s *AccomodationService) UpdateAvailableTerm(availableTerm model.AvailableTerm, id uint64, ctx context.Context) (model.AvailableTerm, error) {
+	span := tracer.StartSpanFromContext(ctx, "updateAvailableTermService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	var availableTermToUpdate model.AvailableTerm
 
-	availableTermToUpdate, _ = s.FindAvailableTermById(id)
+	availableTermToUpdate, _ = s.FindAvailableTermById(id, ctx)
 	if availableTermToUpdate.ID != 0 {
 		availableTermToUpdate.StartDate = availableTerm.StartDate
 		availableTermToUpdate.EndDate = availableTerm.EndDate
-		s.Repo.UpdateAvailableTerm(availableTermToUpdate)
+		s.Repo.UpdateAvailableTerm(availableTermToUpdate, ctx)
 	}
 
 	return availableTermToUpdate, nil
 }
 
-func (s *AccomodationService) DeletePrice(id uint64) error {
+func (s *AccomodationService) DeletePrice(id uint64, ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "deletePriceService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	var priceToDelete model.Price
 
-	priceToDelete, _ = s.FindPriceById(id)
+	priceToDelete, _ = s.FindPriceById(id, ctx)
 	if priceToDelete.ID == 0 {
-		return errors.New("price with given id does not exist")
+		err := errors.New("price with given id does not exist")
+		tracer.LogError(span, err)
+		return err
 	}
 
-	return s.Repo.DeletePrice(id)
+	return s.Repo.DeletePrice(id, ctx)
 }
 
-func (s *AccomodationService) DeleteAvailableTerm(id uint64) error {
+func (s *AccomodationService) DeleteAvailableTerm(id uint64, ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "deleteAvailableTermService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	var availableTermToDelete model.AvailableTerm
 
-	availableTermToDelete, _ = s.FindAvailableTermById(id)
+	availableTermToDelete, _ = s.FindAvailableTermById(id, ctx)
 	if availableTermToDelete.ID == 0 {
-		return errors.New("available term with given id does not exist")
+		err := errors.New("available term with given id does not exist")
+		tracer.LogError(span, err)
+		return err
 	}
 
 	return s.Repo.DeleteAvailableTerm(id)
 }
 
-func (s *AccomodationService) DeleteReservedTerm(id uint64) error {
+func (s *AccomodationService) DeleteReservedTerm(id uint64, ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "deleteReservedTermService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	var reservedTermToDelete model.ReservedTerm
 
-	reservedTermToDelete, _ = s.FindReservedTermById(id)
+	reservedTermToDelete, _ = s.FindReservedTermById(id, ctx)
 	if reservedTermToDelete.ID == 0 {
-		return errors.New("reserved term with given id does not exist")
+		err := errors.New("reserved term with given id does not exist")
+		tracer.LogError(span, err)
+		return err
 	}
 
 	return s.Repo.DeleteReservedTerm(id)
 }
 
-func (service *AccomodationService) FindAccomodationById(id uint) (model.Accomodation, error) {
-	accomodation, err := service.Repo.FindAccomodationById(id)
+func (service *AccomodationService) FindAccomodationById(id uint, ctx context.Context) (model.Accomodation, error) {
+	span := tracer.StartSpanFromContext(ctx, "findAccomodationByIdService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	accomodation, err := service.Repo.FindAccomodationById(id, ctx)
 
 	if err != nil {
+		tracer.LogError(span, err)
 		return model.Accomodation{}, errors.New("accomodation with given id does not exist")
 	}
 
 	return accomodation, nil
 }
 
-func (s *AccomodationService) FindPriceById(id uint64) (model.Price, error) {
-	price, err := s.Repo.FindPriceById(id)
+func (s *AccomodationService) FindPriceById(id uint64, ctx context.Context) (model.Price, error) {
+	span := tracer.StartSpanFromContext(ctx, "findPriceByIdService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	price, err := s.Repo.FindPriceById(id, ctx)
 
 	if err != nil {
+		tracer.LogError(span, err)
 		return model.Price{}, errors.New("price with given id does not exist")
 	}
 
 	return price, nil
 }
 
-func (service *AccomodationService) FindAvailableTermById(id uint64) (model.AvailableTerm, error) {
-	availableTerm, err := service.Repo.FindAvailableTermById(id)
+func (service *AccomodationService) FindAvailableTermById(id uint64, ctx context.Context) (model.AvailableTerm, error) {
+	span := tracer.StartSpanFromContext(ctx, "findAvailableTermByIdService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	availableTerm, err := service.Repo.FindAvailableTermById(id, ctx)
 
 	if err != nil {
+		tracer.LogError(span, err)
 		return model.AvailableTerm{}, errors.New("available term with given id does not exist")
 	}
 
 	return availableTerm, nil
 }
 
-func (service *AccomodationService) FindReservedTermById(id uint64) (model.ReservedTerm, error) {
-	reservedTerm, err := service.Repo.FindReservedTermById(id)
+func (service *AccomodationService) FindReservedTermById(id uint64, ctx context.Context) (model.ReservedTerm, error) {
+	span := tracer.StartSpanFromContext(ctx, "findReservedTermByIdService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	reservedTerm, err := service.Repo.FindReservedTermById(id, ctx)
 
 	if err != nil {
+		tracer.LogError(span, err)
 		return model.ReservedTerm{}, errors.New("reserved term with given id does not exist")
 	}
 
 	return reservedTerm, nil
 }
 
-func (service *AccomodationService) FindAvailableTerms(accommodationId uint) ([]model.AvailableTerm, error) {
-	_, err := service.Repo.FindAccomodationById(accommodationId)
+func (service *AccomodationService) FindAvailableTerms(accommodationId uint, ctx context.Context) ([]model.AvailableTerm, error) {
+	span := tracer.StartSpanFromContext(ctx, "findAvailableTermsService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := service.Repo.FindAccomodationById(accommodationId, ctx)
 
 	if err != nil {
+		tracer.LogError(span, err)
 		return []model.AvailableTerm{}, errors.New("accommodation with given id does not exist")
 	}
 
-	var availableTerms = service.Repo.FindAvailableTermAfter(accommodationId, time.Now())
+	var availableTerms = service.Repo.FindAvailableTermAfter(accommodationId, time.Now(), ctx)
 
 	return availableTerms, nil
 }
@@ -190,13 +256,16 @@ func (service *AccomodationService) CalculatePrice(accommodation model.Accomodat
 	return basePrice, totalPrice
 }
 
-func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO model.SearchAccomodationDTO) []model.SearchAccomodationReturnDTO {
-	accomodations := service.Repo.FindAccomodationByGuestsAndAddress(searchAccomodationDTO.NumberOfGuests, searchAccomodationDTO.Address)
+func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO model.SearchAccomodationDTO, ctx context.Context) []model.SearchAccomodationReturnDTO {
+	span := tracer.StartSpanFromContext(ctx, "searchAccomodationsService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	accomodations := service.Repo.FindAccomodationByGuestsAndAddress(searchAccomodationDTO.NumberOfGuests, searchAccomodationDTO.Address, ctx)
 
 	var availableAccomodations []model.SearchAccomodationReturnDTO
 	for _, accommodation := range accomodations {
-		if service.Repo.IsAvailable(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate) == true {
-			if service.Repo.IsReserved(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate) == false {
+		if service.Repo.IsAvailable(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate, ctx) == true {
+			if service.Repo.IsReserved(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate, ctx) == false {
 				basePrice, totalPrice := service.CalculatePrice(accommodation, searchAccomodationDTO)
 				accomodationDTO := accommodation.ToDTO()
 				var searchAccomodationReturnDTO model.SearchAccomodationReturnDTO

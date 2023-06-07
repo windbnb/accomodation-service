@@ -1,33 +1,48 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
 	"github.com/windbnb/accomodation-service/client"
 	"github.com/windbnb/accomodation-service/model"
 	"github.com/windbnb/accomodation-service/service"
+	"github.com/windbnb/accomodation-service/tracer"
 	"github.com/windbnb/accomodation-service/util"
 )
 
 type Handler struct {
 	Service *service.AccomodationService
+	Tracer  opentracing.Tracer
+	Closer  io.Closer
 }
 
 func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("createAccomodationHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling create accomodation at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		tracer.LogError(span, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	userId, _ := strconv.ParseUint(r.MultipartForm.Value["userId"][0], 10, 32)
+	ctx := tracer.ContextWithSpan(context.Background(), span)
 
 	userResponse, err := client.GetUserById(uint(userId))
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadGateway)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadGateway})
 		return
@@ -41,12 +56,13 @@ func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 
 	newAccomodation := util.ParseMultipartAccomodation(r)
 	newAccomodation.UserId = uint(userId)
-	savedAccomodation := h.Service.SaveAccomodation(newAccomodation)
+	savedAccomodation := h.Service.SaveAccomodation(newAccomodation, ctx)
 
 	files := r.MultipartForm.File["images"]
 
 	fileNames, err := util.SaveHeaderFileImages(files)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 		return
@@ -62,14 +78,22 @@ func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateAccommodationAcceptReservationType(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("acceptReservationTypeHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling accept reservation type at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 	accomodationId, _ := strconv.Atoi(params["id"])
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	var acceptReservationType *model.AcceptReservationTypeDTO
 	err := json.NewDecoder(r.Body).Decode(&acceptReservationType)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 		return
@@ -78,6 +102,7 @@ func (h *Handler) UpdateAccommodationAcceptReservationType(w http.ResponseWriter
 	tokenString := r.Header.Get("Authorization")
 	userResponse, err := client.AuthorizeHost(tokenString)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
 		return
@@ -89,8 +114,9 @@ func (h *Handler) UpdateAccommodationAcceptReservationType(w http.ResponseWriter
 		return
 	}
 
-	accommodation, err := h.Service.UpdateAccommodationAcceptReservationType(uint(accomodationId), acceptReservationType.AcceptReservationType, userResponse.Id)
+	accommodation, err := h.Service.UpdateAccommodationAcceptReservationType(uint(accomodationId), acceptReservationType.AcceptReservationType, userResponse.Id, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 		return
@@ -100,14 +126,22 @@ func (h *Handler) UpdateAccommodationAcceptReservationType(w http.ResponseWriter
 }
 
 func (h *Handler) FindAccommodationById(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("findAccomodationByIdHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling find accomodation by id at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 	accomodationId, _ := strconv.Atoi(params["id"])
 
-	accomodation, err := h.Service.FindAccomodationById(uint(accomodationId))
-	availalbleTerms, err2 := h.Service.FindAvailableTerms(uint(accomodationId))
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	accomodation, err := h.Service.FindAccomodationById(uint(accomodationId), ctx)
+	availalbleTerms, err2 := h.Service.FindAvailableTerms(uint(accomodationId), ctx)
 	if err != nil || err2 != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
 		return
@@ -141,14 +175,22 @@ func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("createPriceHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling create price at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	var createPricesDTO []model.CreatePriceDTO
 	json.NewDecoder(r.Body).Decode(&createPricesDTO)
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	tokenString := r.Header.Get("Authorization")
 	userResponse, err := client.AuthorizeHost(tokenString)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
 		return
@@ -165,8 +207,9 @@ func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 	for _, createPriceDTO := range createPricesDTO {
 		newPrice := util.FromCreatePriceDTOToPrice(createPriceDTO)
 		newPrice.Active = true
-		_, err := h.Service.FindAccomodationById(newPrice.AccomodationID)
+		_, err := h.Service.FindAccomodationById(newPrice.AccomodationID, ctx)
 		if err != nil {
+			tracer.LogError(span, err)
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 			return
@@ -181,6 +224,11 @@ func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdatePrice(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("updatePriceHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling update price at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
@@ -189,10 +237,13 @@ func (h *Handler) UpdatePrice(w http.ResponseWriter, r *http.Request) {
 	var updatePriceDTO model.UpdatePriceDTO
 	json.NewDecoder(r.Body).Decode(&updatePriceDTO)
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	newPrice := util.FromUpdatePriceDTOToPrice(updatePriceDTO)
 
-	savedPrice, err := h.Service.UpdatePrice(newPrice, priceId)
+	savedPrice, err := h.Service.UpdatePrice(newPrice, priceId, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 		return
@@ -204,13 +255,21 @@ func (h *Handler) UpdatePrice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeletePrice(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("deletePriceHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling delete price at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 	priceId, _ := strconv.ParseUint(params["id"], 10, 32)
 
-	err := h.Service.DeletePrice(priceId)
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	err := h.Service.DeletePrice(priceId, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
 		return
@@ -221,14 +280,22 @@ func (h *Handler) DeletePrice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateAvailableTerm(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("createAvailableTermHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling create available term at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	var createAvailableTermsDTO []model.CreateAvailableTermDTO
 	json.NewDecoder(r.Body).Decode(&createAvailableTermsDTO)
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	tokenString := r.Header.Get("Authorization")
 	userResponse, err := client.AuthorizeHost(tokenString)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
 		return
@@ -244,13 +311,14 @@ func (h *Handler) CreateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 
 	for _, createAvailableTermDTO := range createAvailableTermsDTO {
 		newAvailableTerm := util.FromCreateAvailableTermDTOToAvailableTerm(createAvailableTermDTO)
-		_, err := h.Service.FindAccomodationById(newAvailableTerm.AccomodationID)
+		_, err := h.Service.FindAccomodationById(newAvailableTerm.AccomodationID, ctx)
 		if err != nil {
+			tracer.LogError(span, err)
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 			return
 		}
-		savedAvailableTerm := h.Service.SaveAvailableTerm(newAvailableTerm)
+		savedAvailableTerm := h.Service.SaveAvailableTerm(newAvailableTerm, ctx)
 		availableTermDTO := savedAvailableTerm.ToDTO()
 		availableTermsDTO = append(availableTermsDTO, availableTermDTO)
 	}
@@ -260,6 +328,11 @@ func (h *Handler) CreateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateAvailableTerm(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("updateAvailableTermHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling update available term at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
@@ -268,9 +341,12 @@ func (h *Handler) UpdateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 	var updateAvailableTermDTO model.UpdateAvailableTermDTO
 	json.NewDecoder(r.Body).Decode(&updateAvailableTermDTO)
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	tokenString := r.Header.Get("Authorization")
 	userResponse, err := client.AuthorizeHost(tokenString)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
 		return
@@ -284,8 +360,9 @@ func (h *Handler) UpdateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 
 	newAvailableTerm := util.FromUpdateAvailableTermDTOToAvailableTerm(updateAvailableTermDTO)
 
-	savedAvailableTerm, err := h.Service.UpdateAvailableTerm(newAvailableTerm, availableTermId)
+	savedAvailableTerm, err := h.Service.UpdateAvailableTerm(newAvailableTerm, availableTermId, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 		return
@@ -297,14 +374,22 @@ func (h *Handler) UpdateAvailableTerm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteAvailableTerm(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("deleteAvailableTermHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling delete available term at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 	availableTermId, _ := strconv.ParseUint(params["id"], 10, 32)
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	tokenString := r.Header.Get("Authorization")
 	userResponse, err := client.AuthorizeHost(tokenString)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusUnauthorized})
 		return
@@ -316,8 +401,9 @@ func (h *Handler) DeleteAvailableTerm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	er := h.Service.DeleteAvailableTerm(availableTermId)
+	er := h.Service.DeleteAvailableTerm(availableTermId, ctx)
 	if er != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
 		return
@@ -328,19 +414,27 @@ func (h *Handler) DeleteAvailableTerm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateReservedTerm(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("createReservedTermHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling create reserved term at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	var createReservedTermDTO model.CreateReservedTermDTO
 	json.NewDecoder(r.Body).Decode(&createReservedTermDTO)
 
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	newReservedTerm := util.FromCreateReservedTermDTOToReservedTerm(createReservedTermDTO)
-	_, err := h.Service.FindAccomodationById(newReservedTerm.AccomodationID)
+	_, err := h.Service.FindAccomodationById(newReservedTerm.AccomodationID, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusBadRequest})
 		return
 	}
-	savedReservedTerm := h.Service.SaveReservedTerm(newReservedTerm)
+	savedReservedTerm := h.Service.SaveReservedTerm(newReservedTerm, ctx)
 	reservedTermDTO := savedReservedTerm.ToDTO()
 
 	json.NewEncoder(w).Encode(reservedTermDTO)
@@ -348,13 +442,21 @@ func (h *Handler) CreateReservedTerm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteReservedTerm(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("deleteReservedTermHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling delete reserved term at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 	reservedTermId, _ := strconv.ParseUint(params["id"], 10, 32)
 
-	err := h.Service.DeleteReservedTerm(reservedTermId)
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	err := h.Service.DeleteReservedTerm(reservedTermId, ctx)
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
 		return
@@ -365,19 +467,29 @@ func (h *Handler) DeleteReservedTerm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteHostAccomodation(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("deleteHostAccomodationHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling delete host accomodation at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
 	hostId, err := strconv.ParseUint(params["hostId"], 10, 32)
+
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "cannot parse host id", StatusCode: http.StatusBadRequest})
 		return
 	}
 
-	err = h.Service.DeleteHostAccomodation(uint(hostId))
+	err = h.Service.DeleteHostAccomodation(uint(hostId), ctx)
 
 	if err != nil {
+		tracer.LogError(span, err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(model.ErrorResponse{Message: err.Error(), StatusCode: http.StatusNotFound})
 		return
@@ -387,12 +499,19 @@ func (h *Handler) DeleteHostAccomodation(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) SearchAccomodation(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("searchAccomodationHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling search accomodation at %s\n", r.URL.Path)),
+	)
 	w.Header().Set("Content-Type", "application/json")
 
 	var searchAccomodationDTO model.SearchAccomodationDTO
 	json.NewDecoder(r.Body).Decode(&searchAccomodationDTO)
 
-	accomodationsDTO := h.Service.SearchAccomodations(searchAccomodationDTO)
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	accomodationsDTO := h.Service.SearchAccomodations(searchAccomodationDTO, ctx)
 	json.NewEncoder(w).Encode(accomodationsDTO)
 
 }

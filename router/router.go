@@ -8,7 +8,7 @@ import (
 
 func ConfigureRouter(handler *handler.Handler) *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/api/accomodation", metrics.MetricProxy(handler.CreateAccomodation)).Methods("POST")
+	router.HandleFunc("/api/accomodation/create", metrics.MetricProxy(handler.CreateAccomodation)).Methods("POST")
 	router.HandleFunc("/api/accomodation/{id}", metrics.MetricProxy(handler.FindAccommodationById)).Methods("GET")
 	router.HandleFunc("/api/accomodation/{id}/acceptReservationType", metrics.MetricProxy(handler.UpdateAccommodationAcceptReservationType)).Methods("PUT")
 	router.HandleFunc("/api/accomodation/search/available", metrics.MetricProxy(handler.SearchAccomodation)).Methods("GET")

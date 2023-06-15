@@ -3,7 +3,7 @@ version: "3"
 x-logging: &fluent-bit
     driver: fluentd
     options:
-        fluentd-address:  172.24.0.8:24224
+        fluentd-address:  172.21.0.2:24224
 
 services:
   accomodation_db:
@@ -39,6 +39,7 @@ services:
     environment:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: root
+      SERVICE_PATH:  0.0.0.0:8082
       JAEGER_SERVICE_NAME: accomodation-service
       JAEGER_AGENT_HOST: jaeger
       JAEGER_AGENT_PORT: 6831

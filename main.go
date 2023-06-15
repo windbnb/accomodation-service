@@ -31,7 +31,12 @@ func main() {
 		Closer:  closer,
 		Service: &service.AccomodationService{Repo: &repository.Repository{Db: db}}})
 
-	srv := &http.Server{Addr: "0.0.0.0:8082", Handler: router}
+	servicePath, servicePathFound := os.LookupEnv("SERVICE_PATH")
+	if !servicePathFound {
+		servicePath = "http://localhost:8082"
+	}
+
+	srv := &http.Server{Addr: servicePath, Handler: router}
 	go func() {
 		log.Println("server starting")
 		if err := srv.ListenAndServe(); err != nil {

@@ -32,6 +32,11 @@ func main() {
 		Closer:  closer,
 		Service: &service.AccomodationService{Repo: &repository.Repository{Db: db}}})
 
+	servicePath, servicePathFound := os.LookupEnv("SERVICE_PATH")
+	if !servicePathFound {
+		servicePath = "http://localhost:8082"
+	}
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3005"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -40,7 +45,8 @@ func main() {
 		AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
 	})
 
-	srv := &http.Server{Addr: "0.0.0.0:8082", Handler: c.Handler(router)}
+	srv := &http.Server{Addr: servicePath, Handler: c.Handler(router)}
+
 	go func() {
 		log.Println("server starting")
 		if err := srv.ListenAndServe(); err != nil {

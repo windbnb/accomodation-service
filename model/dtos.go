@@ -6,7 +6,7 @@ import (
 
 type AccomodationDTO struct {
 	Id                    uint                  `json:"id"`
-	Name                  string                `json:"statusCode"`
+	Name                  string                `json:"name"`
 	Address               string                `json:"address"`
 	HasWifi               bool                  `json:"hasWifi"`
 	HasKitchen            bool                  `json:"hasKitchen"`
@@ -17,7 +17,7 @@ type AccomodationDTO struct {
 	Images                []string              `json:"images"`
 	UserId                uint                  `json:"userId"`
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
-  PriceType             PriceType             `json:"priceType"`
+	PriceType             PriceType             `json:"priceType"`
 }
 
 type AccommodationBasicDTO struct {
@@ -110,7 +110,7 @@ type ReservedTermDTO struct {
 type AcceptReservationTypeDTO struct {
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
 }
-  
+
 type SearchAccomodationDTO struct {
 	Address        string    `json:"address"`
 	NumberOfGuests uint      `json:"numberOfGuests"`

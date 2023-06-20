@@ -16,9 +16,12 @@ var (
 		{Name: "Lanterna", Address: "Ljubice Ravasi 32, Novi Sad", HasWifi: true, HasKitchen: false, HasAirConditioning: false, HasFreeParking: true, MinimimGuests: 4, MaximumGuests: 4, UserId: 1, AcceptReservationType: model.AUTOMATICALLY, PriceType: model.PER_GUEST},
 	}
 	accomodationImages = []model.AccomodationImage{
-		{ImageName: "slika1.jpg", AccomodationID: 1},
-		{ImageName: "slika2.jpg", AccomodationID: 1},
-		{ImageName: "slika3.jpg", AccomodationID: 2},
+		{ImageName: "373488187.jpg", AccomodationID: 1},
+		{ImageName: "373487944.jpg", AccomodationID: 1},
+		{ImageName: "373486431.jpg", AccomodationID: 1},
+		{ImageName: "242225269.jpg", AccomodationID: 2},
+		{ImageName: "242218937.jpg", AccomodationID: 2},
+		{ImageName: "242216685.jpg", AccomodationID: 2},
 	}
 
 	prices = []model.Price{

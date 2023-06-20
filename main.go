@@ -34,7 +34,7 @@ func main() {
 
 	servicePath, servicePathFound := os.LookupEnv("SERVICE_PATH")
 	if !servicePathFound {
-		servicePath = "http://localhost:8082"
+		servicePath = "localhost:8082"
 	}
 
 	c := cors.New(cors.Options{

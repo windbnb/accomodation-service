@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -214,7 +215,7 @@ func (r *Repository) FindAccomodationByGuestsAndAddress(numberOfGuests uint, add
 	defer span.Finish()
 	accomodations := &[]model.Accomodation{}
 
-	r.Db.Find(&accomodations, "address LIKE ? AND minimim_guests <= ? AND maximum_guests >= ?", "%"+address+"%", numberOfGuests, numberOfGuests)
+	r.Db.Find(&accomodations, "LOWER(address) LIKE ? AND minimim_guests <= ? AND maximum_guests >= ?", "%"+strings.ToLower(address)+"%", numberOfGuests, numberOfGuests)
 
 	return *accomodations
 }
@@ -251,4 +252,25 @@ func (r *Repository) FindPricesForAccomodation(accomodationId uint, startDate ti
 	r.Db.Find(&prices, "accomodation_id = ? AND start_date <= ? AND end_date >= ? AND active = true", accomodationId, endDate, startDate)
 
 	return *prices
+}
+
+func (r *Repository) FindImagesForAccomodation(accomodationId uint) []string {
+	accomodationImages := &[]model.AccomodationImage{}
+
+	r.Db.Find(&accomodationImages, "accomodation_id = ?", accomodationId)
+
+	var imageNames []string
+	for _, accomodationImage := range *accomodationImages {
+		imageNames = append(imageNames, accomodationImage.ImageName)
+	}
+	return imageNames
+}
+
+func (r *Repository) FindAccomodationsForHOst(hostId uint, ctx context.Context) []model.Accomodation {
+	span := tracer.StartSpanFromContext(ctx, "findAccomodationsForHostRepository")
+	defer span.Finish()
+	accomodations := &[]model.Accomodation{}
+
+	r.Db.Find(&accomodations, "user_id = ?", hostId)
+	return *accomodations
 }

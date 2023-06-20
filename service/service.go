@@ -268,6 +268,7 @@ func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO mo
 			if service.Repo.IsReserved(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate, ctx) == false {
 				basePrice, totalPrice := service.CalculatePrice(accommodation, searchAccomodationDTO)
 				accomodationDTO := accommodation.ToDTO()
+				accomodationDTO.Images = service.Repo.FindImagesForAccomodation(accommodation.ID)
 				var searchAccomodationReturnDTO model.SearchAccomodationReturnDTO
 				searchAccomodationReturnDTO.Accomodation = accomodationDTO
 				searchAccomodationReturnDTO.Price = basePrice

@@ -37,6 +37,7 @@ services:
       - monitoring
     container_name: accomodation-service
     environment:
+      DATABASE_HOST: accomodation_db
       DATABASE_USER: postgres
       DATABASE_PASSWORD: root
       SERVICE_PATH:  0.0.0.0:8082

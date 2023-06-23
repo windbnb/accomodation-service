@@ -153,7 +153,8 @@ func (h *Handler) FindAccommodationById(w http.ResponseWriter, r *http.Request) 
 		MinimimGuests:         accomodation.MinimimGuests,
 		AvailableTerms:        availalbleTerms,
 		UserID:                accomodation.UserId,
-		AcceptReservationType: accomodation.AcceptReservationType}
+		AcceptReservationType: accomodation.AcceptReservationType,
+		Name:                  accomodation.Name}
 
 	json.NewEncoder(w).Encode(returnedValue)
 }

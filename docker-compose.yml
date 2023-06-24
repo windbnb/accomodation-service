@@ -39,6 +39,7 @@ services:
     environment:
       DATABASE_USER: postgres
       DATABASE_PASSWORD: root
+      DATABASE_HOST: accomodation_db
       SERVICE_PATH:  0.0.0.0:8082
       JAEGER_SERVICE_NAME: accomodation-service
       JAEGER_AGENT_HOST: jaeger

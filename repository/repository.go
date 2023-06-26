@@ -266,11 +266,29 @@ func (r *Repository) FindImagesForAccomodation(accomodationId uint) []string {
 	return imageNames
 }
 
-func (r *Repository) FindAccomodationsForHOst(hostId uint, ctx context.Context) []model.Accomodation {
+func (r *Repository) FindAccomodationsForHost(hostId uint, ctx context.Context) []model.Accomodation {
 	span := tracer.StartSpanFromContext(ctx, "findAccomodationsForHostRepository")
 	defer span.Finish()
 	accomodations := &[]model.Accomodation{}
 
 	r.Db.Find(&accomodations, "user_id = ?", hostId)
 	return *accomodations
+}
+
+func (r *Repository) GetAvailableTermsForAccomodation(accomodationId uint, ctx context.Context) []model.AvailableTerm {
+	span := tracer.StartSpanFromContext(ctx, "getAvailableTermsForAccomodationRepository")
+	defer span.Finish()
+	availableTerms := &[]model.AvailableTerm{}
+
+	r.Db.Find(&availableTerms, "accomodation_id = ?", accomodationId)
+	return *availableTerms
+}
+
+func (r *Repository) GetPricesForAccomodation(accomodationId uint, ctx context.Context) []model.Price {
+	span := tracer.StartSpanFromContext(ctx, "getPricesForAccomodationRepository")
+	defer span.Finish()
+	prices := &[]model.Price{}
+
+	r.Db.Find(&prices, "accomodation_id = ?", accomodationId)
+	return *prices
 }

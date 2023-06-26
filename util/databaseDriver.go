@@ -27,16 +27,16 @@ var (
 	prices = []model.Price{
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			Value: 3000, PriceDuration: model.REGULAR, AccomodationID: 1, Active: true},
-		{StartDate: time.Date(2023, 6, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 6, 5, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			Value: 5000, PriceDuration: model.HOLIDAY, AccomodationID: 1, Active: true},
-		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 6, 1, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			Value: 3500, PriceDuration: model.REGULAR, AccomodationID: 2, Active: true},
 	}
 
 	availableTerms = []model.AvailableTerm{
-		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 3, 1, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 1},
-		{StartDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 8, 1, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 1},
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 2},

@@ -11,7 +11,7 @@ import (
 )
 
 type AccomodationService struct {
-	Repo *repository.Repository
+	Repo repository.IRepository
 }
 
 func (s *AccomodationService) SaveAccomodation(accomodation model.Accomodation, ctx context.Context) model.Accomodation {

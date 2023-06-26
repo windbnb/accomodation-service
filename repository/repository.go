@@ -11,6 +11,30 @@ import (
 	"github.com/windbnb/accomodation-service/tracer"
 )
 
+type IRepository interface {
+	SaveAccomodation(accomodation model.Accomodation, ctx context.Context) model.Accomodation
+	SaveAccomodationImage(image model.AccomodationImage) model.AccomodationImage
+	DeleteHostAccomodation(hostId uint, ctx context.Context) error
+	SavePrice(price model.Price) model.Price
+	SaveAvailableTerm(availableTerm model.AvailableTerm, ctx context.Context) model.AvailableTerm
+	SaveReservedTerm(reservedTerm model.ReservedTerm, ctx context.Context) model.ReservedTerm
+	UpdatePrice(price model.Price, ctx context.Context) model.Price
+	UpdateAvailableTerm(availableTerm model.AvailableTerm, ctx context.Context) model.AvailableTerm
+	UpdateAccommodation(accommodation model.Accomodation, ctx context.Context) model.Accomodation
+	FindAccomodationById(id uint, ctx context.Context) (model.Accomodation, error)
+	FindPriceById(id uint64, ctx context.Context) (model.Price, error)
+	FindAvailableTermById(id uint64, ctx context.Context) (model.AvailableTerm, error)
+	FindAvailableTermAfter(accommodationId uint, after time.Time, ctx context.Context) []model.AvailableTerm
+	FindReservedTermById(id uint64, ctx context.Context) (model.ReservedTerm, error)
+	DeletePrice(id uint64, ctx context.Context) error
+	DeleteAvailableTerm(id uint64) error
+	DeleteReservedTerm(id uint64) error
+	FindAccomodationByGuestsAndAddress(numberOfGuests uint, address string, ctx context.Context) []model.Accomodation
+	IsReserved(accomodationId uint, startDate time.Time, endDate time.Time, ctx context.Context) bool
+	IsAvailable(accomodationId uint, startDate time.Time, endDate time.Time, ctx context.Context) bool
+	FindPricesForAccomodation(accomodationId uint, startDate time.Time, endDate time.Time) []model.Price
+}
+
 type Repository struct {
 	Db *gorm.DB
 }
@@ -151,7 +175,7 @@ func (r *Repository) FindAvailableTermAfter(accommodationId uint, after time.Tim
 }
 
 func (r *Repository) FindReservedTermById(id uint64, ctx context.Context) (model.ReservedTerm, error) {
-	span := tracer.StartSpanFromContext(ctx, "findAvailableTermByIdRepository")
+	span := tracer.StartSpanFromContext(ctx, "findReservedTermByIdRepository")
 	defer span.Finish()
 	var reservedTerm model.ReservedTerm
 

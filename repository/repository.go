@@ -4,12 +4,37 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/windbnb/accomodation-service/model"
 	"github.com/windbnb/accomodation-service/tracer"
 )
+
+type IRepository interface {
+	SaveAccomodation(accomodation model.Accomodation, ctx context.Context) model.Accomodation
+	SaveAccomodationImage(image model.AccomodationImage) model.AccomodationImage
+	DeleteHostAccomodation(hostId uint, ctx context.Context) error
+	SavePrice(price model.Price) model.Price
+	SaveAvailableTerm(availableTerm model.AvailableTerm, ctx context.Context) model.AvailableTerm
+	SaveReservedTerm(reservedTerm model.ReservedTerm, ctx context.Context) model.ReservedTerm
+	UpdatePrice(price model.Price, ctx context.Context) model.Price
+	UpdateAvailableTerm(availableTerm model.AvailableTerm, ctx context.Context) model.AvailableTerm
+	UpdateAccommodation(accommodation model.Accomodation, ctx context.Context) model.Accomodation
+	FindAccomodationById(id uint, ctx context.Context) (model.Accomodation, error)
+	FindPriceById(id uint64, ctx context.Context) (model.Price, error)
+	FindAvailableTermById(id uint64, ctx context.Context) (model.AvailableTerm, error)
+	FindAvailableTermAfter(accommodationId uint, after time.Time, ctx context.Context) []model.AvailableTerm
+	FindReservedTermById(id uint64, ctx context.Context) (model.ReservedTerm, error)
+	DeletePrice(id uint64, ctx context.Context) error
+	DeleteAvailableTerm(id uint64) error
+	DeleteReservedTerm(id uint64) error
+	FindAccomodationByGuestsAndAddress(numberOfGuests uint, address string, ctx context.Context) []model.Accomodation
+	IsReserved(accomodationId uint, startDate time.Time, endDate time.Time, ctx context.Context) bool
+	IsAvailable(accomodationId uint, startDate time.Time, endDate time.Time, ctx context.Context) bool
+	FindPricesForAccomodation(accomodationId uint, startDate time.Time, endDate time.Time) []model.Price
+}
 
 type Repository struct {
 	Db *gorm.DB
@@ -151,7 +176,7 @@ func (r *Repository) FindAvailableTermAfter(accommodationId uint, after time.Tim
 }
 
 func (r *Repository) FindReservedTermById(id uint64, ctx context.Context) (model.ReservedTerm, error) {
-	span := tracer.StartSpanFromContext(ctx, "findAvailableTermByIdRepository")
+	span := tracer.StartSpanFromContext(ctx, "findReservedTermByIdRepository")
 	defer span.Finish()
 	var reservedTerm model.ReservedTerm
 
@@ -214,7 +239,7 @@ func (r *Repository) FindAccomodationByGuestsAndAddress(numberOfGuests uint, add
 	defer span.Finish()
 	accomodations := &[]model.Accomodation{}
 
-	r.Db.Find(&accomodations, "address LIKE ? AND minimim_guests <= ? AND maximum_guests >= ?", "%"+address+"%", numberOfGuests, numberOfGuests)
+	r.Db.Find(&accomodations, "LOWER(address) LIKE ? AND minimim_guests <= ? AND maximum_guests >= ?", "%"+strings.ToLower(address)+"%", numberOfGuests, numberOfGuests)
 
 	return *accomodations
 }
@@ -250,5 +275,44 @@ func (r *Repository) FindPricesForAccomodation(accomodationId uint, startDate ti
 
 	r.Db.Find(&prices, "accomodation_id = ? AND start_date <= ? AND end_date >= ? AND active = true", accomodationId, endDate, startDate)
 
+	return *prices
+}
+
+func (r *Repository) FindImagesForAccomodation(accomodationId uint) []string {
+	accomodationImages := &[]model.AccomodationImage{}
+
+	r.Db.Find(&accomodationImages, "accomodation_id = ?", accomodationId)
+
+	var imageNames []string
+	for _, accomodationImage := range *accomodationImages {
+		imageNames = append(imageNames, accomodationImage.ImageName)
+	}
+	return imageNames
+}
+
+func (r *Repository) FindAccomodationsForHost(hostId uint, ctx context.Context) []model.Accomodation {
+	span := tracer.StartSpanFromContext(ctx, "findAccomodationsForHostRepository")
+	defer span.Finish()
+	accomodations := &[]model.Accomodation{}
+
+	r.Db.Find(&accomodations, "user_id = ?", hostId)
+	return *accomodations
+}
+
+func (r *Repository) GetAvailableTermsForAccomodation(accomodationId uint, ctx context.Context) []model.AvailableTerm {
+	span := tracer.StartSpanFromContext(ctx, "getAvailableTermsForAccomodationRepository")
+	defer span.Finish()
+	availableTerms := &[]model.AvailableTerm{}
+
+	r.Db.Find(&availableTerms, "accomodation_id = ?", accomodationId)
+	return *availableTerms
+}
+
+func (r *Repository) GetPricesForAccomodation(accomodationId uint, ctx context.Context) []model.Price {
+	span := tracer.StartSpanFromContext(ctx, "getPricesForAccomodationRepository")
+	defer span.Finish()
+	prices := &[]model.Price{}
+
+	r.Db.Find(&prices, "accomodation_id = ?", accomodationId)
 	return *prices
 }

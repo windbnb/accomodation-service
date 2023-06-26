@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -16,24 +17,27 @@ var (
 		{Name: "Lanterna", Address: "Ljubice Ravasi 32, Novi Sad", HasWifi: true, HasKitchen: false, HasAirConditioning: false, HasFreeParking: true, MinimimGuests: 4, MaximumGuests: 4, UserId: 1, AcceptReservationType: model.AUTOMATICALLY, PriceType: model.PER_GUEST},
 	}
 	accomodationImages = []model.AccomodationImage{
-		{ImageName: "slika1.jpg", AccomodationID: 1},
-		{ImageName: "slika2.jpg", AccomodationID: 1},
-		{ImageName: "slika3.jpg", AccomodationID: 2},
+		{ImageName: "373488187.jpg", AccomodationID: 1},
+		{ImageName: "373487944.jpg", AccomodationID: 1},
+		{ImageName: "373486431.jpg", AccomodationID: 1},
+		{ImageName: "242225269.jpg", AccomodationID: 2},
+		{ImageName: "242218937.jpg", AccomodationID: 2},
+		{ImageName: "242216685.jpg", AccomodationID: 2},
 	}
 
 	prices = []model.Price{
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			Value: 3000, PriceDuration: model.REGULAR, AccomodationID: 1, Active: true},
-		{StartDate: time.Date(2023, 6, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 6, 5, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			Value: 5000, PriceDuration: model.HOLIDAY, AccomodationID: 1, Active: true},
-		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 6, 1, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			Value: 3500, PriceDuration: model.REGULAR, AccomodationID: 2, Active: true},
 	}
 
 	availableTerms = []model.AvailableTerm{
-		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 3, 1, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 1},
-		{StartDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 8, 1, 10, 0, 0, 0, time.Local),
+		{StartDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 1},
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 2},
@@ -41,7 +45,20 @@ var (
 )
 
 func ConnectToDatabase() *gorm.DB {
-	connectionString := "host=accomodation_db user=postgres dbname=AccomodationServiceDB sslmode=disable password=root port=5432"
+	host, hostFound := os.LookupEnv("DATABASE_HOST")
+	if !hostFound {
+		host = "localhost"
+	}
+	user, userFound := os.LookupEnv("DATABASE_USER")
+	if !userFound {
+		user = "postgres"
+	}
+	password, passwordFound := os.LookupEnv("DATABASE_PASSWORD")
+	if !passwordFound {
+		password = "root"
+	}
+
+	connectionString := "host=" + host + " user=" + user + " dbname=AccomodationServiceDB sslmode=disable password=" + password + " port=5432"
 	dialect := "postgres"
 
 	db, err := gorm.Open(dialect, connectionString)

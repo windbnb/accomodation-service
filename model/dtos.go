@@ -6,7 +6,7 @@ import (
 
 type AccomodationDTO struct {
 	Id                    uint                  `json:"id"`
-	Name                  string                `json:"statusCode"`
+	Name                  string                `json:"name"`
 	Address               string                `json:"address"`
 	HasWifi               bool                  `json:"hasWifi"`
 	HasKitchen            bool                  `json:"hasKitchen"`

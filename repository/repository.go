@@ -34,6 +34,10 @@ type IRepository interface {
 	IsReserved(accomodationId uint, startDate time.Time, endDate time.Time, ctx context.Context) bool
 	IsAvailable(accomodationId uint, startDate time.Time, endDate time.Time, ctx context.Context) bool
 	FindPricesForAccomodation(accomodationId uint, startDate time.Time, endDate time.Time) []model.Price
+	FindImagesForAccomodation(accomodationId uint) []string
+	FindAccomodationsForHost(hostId uint, ctx context.Context) []model.Accomodation
+	GetAvailableTermsForAccomodation(accomodationId uint, ctx context.Context) []model.AvailableTerm
+	GetPricesForAccomodation(accomodationId uint, ctx context.Context) []model.Price
 }
 
 type Repository struct {

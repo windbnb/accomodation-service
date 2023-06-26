@@ -27,6 +27,7 @@ type AccommodationBasicDTO struct {
 	AvailableTerms        []AvailableTerm       `json:"availableTerms"`
 	UserID                uint                  `json:"userID"`
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
+	Name                  string                `json:"name"`
 }
 
 type ErrorResponse struct {

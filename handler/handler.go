@@ -2,9 +2,12 @@ package handler
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,6 +26,15 @@ type Handler struct {
 	Tracer  opentracing.Tracer
 	Closer  io.Closer
 }
+
+func (handler *Handler) Healthcheck(w http.ResponseWriter, _ *http.Request) {
+    _, _ = fmt.Fprintln(w, "Healthy!")
+}
+
+func (handler *Handler) Ready(w http.ResponseWriter, _ *http.Request) {
+    _, _ = fmt.Fprintln(w, "Ready!")
+}
+
 
 func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 	span := tracer.StartSpanFromRequest("createAccomodationHandler", h.Tracer, r)
@@ -153,7 +165,8 @@ func (h *Handler) FindAccommodationById(w http.ResponseWriter, r *http.Request) 
 		MinimimGuests:         accomodation.MinimimGuests,
 		AvailableTerms:        availalbleTerms,
 		UserID:                accomodation.UserId,
-		AcceptReservationType: accomodation.AcceptReservationType}
+		AcceptReservationType: accomodation.AcceptReservationType,
+		Name:                  accomodation.Name}
 
 	json.NewEncoder(w).Encode(returnedValue)
 }
@@ -171,7 +184,24 @@ func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "./images/"+filename)
+	// http.ServeFile(w, r, "/app/images/"+filename)
+	bytes, err := ioutil.ReadFile("/app/images/" + filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var base64Encoding string
+
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+	json.NewEncoder(w).Encode(base64Encoding)
 }
 
 func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
@@ -515,3 +545,80 @@ func (h *Handler) SearchAccomodation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(accomodationsDTO)
 
 }
+
+
+func (h *Handler) FindAccommodationsForHost(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("findAccomodationsForHostHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling find accomodations for host at %s\n", r.URL.Path)),
+	)
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	hostId, err := strconv.ParseUint(params["hostId"], 10, 32)
+
+	if err != nil {
+		tracer.LogError(span, err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "cannot parse host id", StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	accomodationsDTO := h.Service.FindAccommodationsForHost(uint(hostId), ctx)
+	json.NewEncoder(w).Encode(accomodationsDTO)
+
+}
+
+func (h *Handler) GetAvailableTermsForAccomodation(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("getAvailableTermsForAccomodationHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling get available terms for accomodation at %s\n", r.URL.Path)),
+	)
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	accomodationId, err := strconv.ParseUint(params["id"], 10, 32)
+
+	if err != nil {
+		tracer.LogError(span, err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "cannot parse accomodation id", StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	availableTermsDTO := h.Service.GetAvailableTermsForAccomodation(uint(accomodationId), ctx)
+	json.NewEncoder(w).Encode(availableTermsDTO)
+
+}
+
+func (h *Handler) GetPricesForAccomodation(w http.ResponseWriter, r *http.Request) {
+	span := tracer.StartSpanFromRequest("getPricesForAccomodationHandler", h.Tracer, r)
+	defer span.Finish()
+	span.LogFields(
+		tracer.LogString("handler", fmt.Sprintf("handling get prices for accomodation at %s\n", r.URL.Path)),
+	)
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	accomodationId, err := strconv.ParseUint(params["id"], 10, 32)
+
+	if err != nil {
+		tracer.LogError(span, err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.ErrorResponse{Message: "cannot parse accomodation id", StatusCode: http.StatusBadRequest})
+		return
+	}
+
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+	pricesDTO := h.Service.GetPricesForAccomodation(uint(accomodationId), ctx)
+	json.NewEncoder(w).Encode(pricesDTO)
+
+}
+

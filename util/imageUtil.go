@@ -45,16 +45,12 @@ func SaveHeaderFileImages(files []*multipart.FileHeader) ([]string, error) {
 			return nil, err
 		}
 
-		err = os.MkdirAll("./images", os.ModePerm)
-		if err != nil {
-			return nil, err
-		}
-
 		filenameTokens := strings.Split(filepath.Ext(fileHeader.Filename), ".")
 		fileExtension := filenameTokens[len(filenameTokens)-1]
 		saveFileName := uuid.New().String() + "." + fileExtension
 		fileNames = append(fileNames, saveFileName)
-		f, err := os.Create(fmt.Sprintf("./images/%s", saveFileName))
+		f, err := os.Create(fmt.Sprintf("/app/images/%s", saveFileName))
+
 		if err != nil {
 			return nil, err
 		}
@@ -69,3 +65,4 @@ func SaveHeaderFileImages(files []*multipart.FileHeader) ([]string, error) {
 
 	return fileNames, nil
 }
+

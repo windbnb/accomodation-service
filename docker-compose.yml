@@ -53,6 +53,9 @@ services:
     depends_on:
       accomodation_db:
         condition: service_healthy
+    volumes:
+      - ./images:/app/images
+
 
 volumes:
   accomodation-data:

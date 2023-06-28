@@ -234,7 +234,8 @@ func (service *AccomodationService) FindAvailableTerms(accommodationId uint, ctx
 	return availableTerms, nil
 }
 
-func (service *AccomodationService) CalculatePrice(accommodation model.Accomodation, searchAccomodationDTO model.SearchAccomodationDTO) (float32, float32) {
+func (service *AccomodationService) CalculatePrice(accommodation model.Accomodation, searchAccomodationDTO model.SearchAccomodationDTO) (float32, int) {
+
 	prices := service.Repo.FindPricesForAccomodation(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate)
 	var basePrice float32 = 0
 	for _, price := range prices {
@@ -253,7 +254,8 @@ func (service *AccomodationService) CalculatePrice(accommodation model.Accomodat
 		totalPrice = basePrice
 	}
 
-	return basePrice, totalPrice
+	return basePrice, int(totalPrice)
+
 }
 
 func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO model.SearchAccomodationDTO, ctx context.Context) []model.SearchAccomodationReturnDTO {
@@ -268,6 +270,7 @@ func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO mo
 			if service.Repo.IsReserved(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate, ctx) == false {
 				basePrice, totalPrice := service.CalculatePrice(accommodation, searchAccomodationDTO)
 				accomodationDTO := accommodation.ToDTO()
+				accomodationDTO.Images = service.Repo.FindImagesForAccomodation(accommodation.ID)
 				var searchAccomodationReturnDTO model.SearchAccomodationReturnDTO
 				searchAccomodationReturnDTO.Accomodation = accomodationDTO
 				searchAccomodationReturnDTO.Price = basePrice
@@ -280,4 +283,51 @@ func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO mo
 		}
 	}
 	return availableAccomodations
+}
+
+
+func (service *AccomodationService) FindAccommodationsForHost(hostId uint, ctx context.Context) []model.AccomodationDTO {
+	span := tracer.StartSpanFromContext(ctx, "findAccomodationsForHostService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	accomodations := service.Repo.FindAccomodationsForHost(hostId, ctx)
+
+	var hostAccomodations []model.AccomodationDTO
+	for _, accommodation := range accomodations {
+		accomodationDTO := accommodation.ToDTO()
+		accomodationDTO.Images = service.Repo.FindImagesForAccomodation(accommodation.ID)
+		hostAccomodations = append(hostAccomodations, accomodationDTO)
+
+	}
+	return hostAccomodations
+}
+
+func (service *AccomodationService) GetAvailableTermsForAccomodation(accomodationId uint, ctx context.Context) []model.AvailableTermDTO {
+	span := tracer.StartSpanFromContext(ctx, "getAvailableTermsForAccomodationService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	availableTerms := service.Repo.GetAvailableTermsForAccomodation(accomodationId, ctx)
+
+	var availableTermsDTO []model.AvailableTermDTO
+	for _, availableTerm := range availableTerms {
+		availableTermDTO := availableTerm.ToDTO()
+		availableTermsDTO = append(availableTermsDTO, availableTermDTO)
+
+	}
+	return availableTermsDTO
+}
+
+func (service *AccomodationService) GetPricesForAccomodation(accomodationId uint, ctx context.Context) []model.PriceDTO {
+	span := tracer.StartSpanFromContext(ctx, "getPricesForAccomodationService")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	prices := service.Repo.GetPricesForAccomodation(accomodationId, ctx)
+
+	var pricesDTO []model.PriceDTO
+	for _, price := range prices {
+		priceDTO := price.ToDTO()
+		pricesDTO = append(pricesDTO, priceDTO)
+
+	}
+	return pricesDTO
 }

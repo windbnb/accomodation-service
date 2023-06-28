@@ -23,6 +23,7 @@ var (
 		{ImageName: "242225269.jpg", AccomodationID: 2},
 		{ImageName: "242218937.jpg", AccomodationID: 2},
 		{ImageName: "242216685.jpg", AccomodationID: 2},
+
 	}
 
 	prices = []model.Price{
@@ -34,7 +35,7 @@ var (
 			Value: 3500, PriceDuration: model.REGULAR, AccomodationID: 2, Active: true},
 	}
 
-	availableTerms = []model.AvailableTerm{
+availableTerms = []model.AvailableTerm{
 		{StartDate: time.Date(2023, 1, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local),
 			AccomodationID: 1},
 		{StartDate: time.Date(2023, 5, 1, 10, 0, 0, 0, time.Local), EndDate: time.Date(2024, 1, 1, 10, 0, 0, 0, time.Local),

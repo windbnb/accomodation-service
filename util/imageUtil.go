@@ -50,6 +50,7 @@ func SaveHeaderFileImages(files []*multipart.FileHeader) ([]string, error) {
 		saveFileName := uuid.New().String() + "." + fileExtension
 		fileNames = append(fileNames, saveFileName)
 		f, err := os.Create(fmt.Sprintf("/app/images/%s", saveFileName))
+
 		if err != nil {
 			return nil, err
 		}
@@ -64,3 +65,4 @@ func SaveHeaderFileImages(files []*multipart.FileHeader) ([]string, error) {
 
 	return fileNames, nil
 }
+

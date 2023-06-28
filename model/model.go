@@ -19,7 +19,7 @@ type Accomodation struct {
 	Images                []AccomodationImage
 	UserId                uint
 	Prices                []Price
-	PriceType             PriceType
+  PriceType             PriceType
 	AcceptReservationType AcceptReservationType
 }
 
@@ -76,6 +76,7 @@ func (accomodation *Accomodation) ToDTO() AccomodationDTO {
 		UserId:                accomodation.UserId,
 		AcceptReservationType: accomodation.AcceptReservationType,
 		PriceType:             accomodation.PriceType}
+
 }
 
 type AccomodationImage struct {

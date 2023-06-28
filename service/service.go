@@ -235,6 +235,7 @@ func (service *AccomodationService) FindAvailableTerms(accommodationId uint, ctx
 }
 
 func (service *AccomodationService) CalculatePrice(accommodation model.Accomodation, searchAccomodationDTO model.SearchAccomodationDTO) (float32, int) {
+
 	prices := service.Repo.FindPricesForAccomodation(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate)
 	var basePrice float32 = 0
 	for _, price := range prices {
@@ -254,6 +255,7 @@ func (service *AccomodationService) CalculatePrice(accommodation model.Accomodat
 	}
 
 	return basePrice, int(totalPrice)
+
 }
 
 func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO model.SearchAccomodationDTO, ctx context.Context) []model.SearchAccomodationReturnDTO {
@@ -282,6 +284,7 @@ func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO mo
 	}
 	return availableAccomodations
 }
+
 
 func (service *AccomodationService) FindAccommodationsForHost(hostId uint, ctx context.Context) []model.AccomodationDTO {
 	span := tracer.StartSpanFromContext(ctx, "findAccomodationsForHostService")

@@ -35,6 +35,7 @@ func (handler *Handler) Ready(w http.ResponseWriter, _ *http.Request) {
     _, _ = fmt.Fprintln(w, "Ready!")
 }
 
+
 func (h *Handler) CreateAccomodation(w http.ResponseWriter, r *http.Request) {
 	span := tracer.StartSpanFromRequest("createAccomodationHandler", h.Tracer, r)
 	defer span.Finish()
@@ -201,7 +202,6 @@ func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 
 	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
 	json.NewEncoder(w).Encode(base64Encoding)
-
 }
 
 func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {
@@ -546,6 +546,7 @@ func (h *Handler) SearchAccomodation(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
 func (h *Handler) FindAccommodationsForHost(w http.ResponseWriter, r *http.Request) {
 	span := tracer.StartSpanFromRequest("findAccomodationsForHostHandler", h.Tracer, r)
 	defer span.Finish()
@@ -620,3 +621,4 @@ func (h *Handler) GetPricesForAccomodation(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(pricesDTO)
 
 }
+

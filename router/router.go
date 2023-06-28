@@ -22,6 +22,7 @@ func ConfigureRouter(handler *handler.Handler) *mux.Router {
 	router.HandleFunc("/api/accomodation/price/{id}", metrics.MetricProxy(handler.DeletePrice)).Methods("DELETE")
 	router.HandleFunc("/api/accomodation/price/for-accomodation/{id}", metrics.MetricProxy(handler.GetPricesForAccomodation)).Methods("GET")
 
+
 	router.HandleFunc("/api/accomodation/availableTerm", metrics.MetricProxy(handler.CreateAvailableTerm)).Methods("POST")
 	router.HandleFunc("/api/accomodation/availableTerm/{id}", metrics.MetricProxy(handler.UpdateAvailableTerm)).Methods("PUT")
 	router.HandleFunc("/api/accomodation/availableTerm/{id}", metrics.MetricProxy(handler.DeleteAvailableTerm)).Methods("DELETE")

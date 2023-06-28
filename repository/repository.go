@@ -320,3 +320,4 @@ func (r *Repository) GetPricesForAccomodation(accomodationId uint, ctx context.C
 	r.Db.Find(&prices, "accomodation_id = ?", accomodationId)
 	return *prices
 }
+

@@ -2,9 +2,12 @@ package handler
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -172,7 +175,25 @@ func (h *Handler) ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "/app/images/"+filename)
+	// http.ServeFile(w, r, "/app/images/"+filename)
+	bytes, err := ioutil.ReadFile("/app/images/" + filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var base64Encoding string
+
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+	json.NewEncoder(w).Encode(base64Encoding)
+
 }
 
 func (h *Handler) CreatePrice(w http.ResponseWriter, r *http.Request) {

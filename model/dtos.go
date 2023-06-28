@@ -125,5 +125,5 @@ type SearchAccomodationReturnDTO struct {
 	StartDate      time.Time       `json:"startDate"`
 	EndDate        time.Time       `json:"endDate"`
 	Price          float32         `json:"price"`
-	TotalPrice     float32         `json:"totalPrice"`
+	TotalPrice     int         `json:"totalPrice"`
 }

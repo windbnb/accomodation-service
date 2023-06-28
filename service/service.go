@@ -234,7 +234,7 @@ func (service *AccomodationService) FindAvailableTerms(accommodationId uint, ctx
 	return availableTerms, nil
 }
 
-func (service *AccomodationService) CalculatePrice(accommodation model.Accomodation, searchAccomodationDTO model.SearchAccomodationDTO) (float32, float32) {
+func (service *AccomodationService) CalculatePrice(accommodation model.Accomodation, searchAccomodationDTO model.SearchAccomodationDTO) (float32, int) {
 	prices := service.Repo.FindPricesForAccomodation(accommodation.ID, searchAccomodationDTO.StartDate, searchAccomodationDTO.EndDate)
 	var basePrice float32 = 0
 	for _, price := range prices {
@@ -253,7 +253,7 @@ func (service *AccomodationService) CalculatePrice(accommodation model.Accomodat
 		totalPrice = basePrice
 	}
 
-	return basePrice, totalPrice
+	return basePrice, int(totalPrice)
 }
 
 func (service *AccomodationService) SearchAccomodations(searchAccomodationDTO model.SearchAccomodationDTO, ctx context.Context) []model.SearchAccomodationReturnDTO {

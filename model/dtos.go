@@ -17,6 +17,7 @@ type AccomodationDTO struct {
 	Images                []string              `json:"images"`
 	UserId                uint                  `json:"userId"`
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
+	PriceType             PriceType             `json:"priceType"`
 }
 
 type AccommodationBasicDTO struct {
@@ -27,7 +28,6 @@ type AccommodationBasicDTO struct {
 	UserID                uint                  `json:"userID"`
 	AcceptReservationType AcceptReservationType `json:"acceptReservationType"`
 	Name                  string                `json:"name"`
-
 }
 
 type ErrorResponse struct {
@@ -125,6 +125,5 @@ type SearchAccomodationReturnDTO struct {
 	StartDate      time.Time       `json:"startDate"`
 	EndDate        time.Time       `json:"endDate"`
 	Price          float32         `json:"price"`
-	TotalPrice     int         `json:"totalPrice"`
-
+	TotalPrice     int             `json:"totalPrice"`
 }

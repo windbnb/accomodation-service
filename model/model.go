@@ -19,7 +19,7 @@ type Accomodation struct {
 	Images                []AccomodationImage
 	UserId                uint
 	Prices                []Price
-  PriceType             PriceType
+	PriceType             PriceType
 	AcceptReservationType AcceptReservationType
 }
 
